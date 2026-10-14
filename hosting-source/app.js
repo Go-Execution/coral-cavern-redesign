@@ -189,6 +189,8 @@ function initGsapExperience(){
  if(motionReduced||!window.gsap||!window.ScrollTrigger){document.documentElement.classList.add('motion-fallback');return}
  gsap.registerPlugin(ScrollTrigger);
  document.documentElement.classList.add('gsap-ready');
+ document.documentElement.classList.remove('js-reveal');
+ $$('.reveal').forEach(element=>element.classList.add('visible'));
  gsapContext=gsap.context(()=>{
   if($('.hero')){
    gsap.timeline({defaults:{ease:'power3.out'}})
@@ -202,17 +204,17 @@ function initGsapExperience(){
   }
 
   gsap.utils.toArray('.section-head,.page-hero>*,.reef-depth-copy>*').forEach(block=>{
-   gsap.from(block,{opacity:0,y:42,duration:.85,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:block,start:'top 88%',once:true}});
+   gsap.from(block,{y:32,duration:.65,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:block,start:'top 92%',once:true}});
   });
   gsap.utils.toArray('.category-grid,.product-grid,.guide-grid,.work-grid,.service-grid,.service-process,.review-grid,.article-grid').forEach(grid=>{
    const children=Array.from(grid.children);
-   gsap.from(children,{opacity:0,y:54,rotationX:-7,stagger:.08,duration:.85,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:grid,start:'top 84%',once:true}});
+   gsap.from(children,{y:34,rotationX:-5,stagger:.045,duration:.58,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:grid,start:'top 92%',once:true}});
   });
   gsap.utils.toArray('.category-card img,.service-feature>img,.about-images>img,.article-card>img').forEach(image=>{
    gsap.fromTo(image,{yPercent:-6,scale:1.08},{yPercent:6,scale:1.02,ease:'none',scrollTrigger:{trigger:image.parentElement,start:'top bottom',end:'bottom top',scrub:.8}});
   });
   if($('.collector-art'))gsap.fromTo('.collector-art',{rotationY:-9,rotationX:4,y:60},{rotationY:6,rotationX:-2,y:-30,ease:'none',scrollTrigger:{trigger:'.collector',start:'top bottom',end:'bottom top',scrub:1}});
-  if($('.vitals-console'))gsap.from('.vitals-console',{opacity:0,scale:.9,rotationY:-8,duration:1,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:'.vitals-console',start:'top 85%',once:true}});
+  if($('.vitals-console'))gsap.from('.vitals-console',{scale:.96,rotationY:-5,duration:.7,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:'.vitals-console',start:'top 92%',once:true}});
 
   ScrollTrigger.matchMedia({
    '(min-width: 901px)':()=>{
@@ -220,7 +222,7 @@ function initGsapExperience(){
     gsap.set('.reef-plane-top',{z:80,y:-105,rotationX:55,scale:.82});
     gsap.set('.reef-plane-middle',{z:0,y:5,rotationX:55,scale:.82});
     gsap.set('.reef-plane-bottom',{z:-80,y:115,rotationX:55,scale:.82});
-    const reefTimeline=gsap.timeline({scrollTrigger:{trigger:'.reef-depth-story',start:'top 10%',end:'+=2100',pin:true,scrub:1,anticipatePin:1,onUpdate:self=>setActiveReefZone(Math.min(2,Math.floor(self.progress*3)))}});
+    const reefTimeline=gsap.timeline({scrollTrigger:{trigger:'.reef-depth-story',start:'top 76px',end:'+=2100',pin:true,scrub:1,anticipatePin:1,onUpdate:self=>setActiveReefZone(Math.min(2,Math.floor(self.progress*3)))}});
     reefTimeline
      .to('.reef-plane-top',{z:230,y:-55,rotationX:8,scale:1.02,duration:1})
      .to('.reef-plane-top',{z:40,y:-205,opacity:.22,rotationX:68,scale:.72,duration:1})
@@ -230,7 +232,7 @@ function initGsapExperience(){
      .to('.reef-glow',{scale:1.35,opacity:.9,duration:2},0);
    },
    '(max-width: 900px)':()=>{
-    gsap.utils.toArray('.reef-plane').forEach((plane,index)=>gsap.from(plane,{opacity:0,x:index%2?45:-45,rotationY:index%2?-8:8,duration:.8,immediateRender:false,scrollTrigger:{trigger:plane,start:'top 88%',once:true}}));
+    gsap.utils.toArray('.reef-plane').forEach((plane,index)=>gsap.from(plane,{x:index%2?28:-28,rotationY:index%2?-6:6,duration:.62,immediateRender:false,scrollTrigger:{trigger:plane,start:'top 92%',once:true}}));
    }
   });
 
