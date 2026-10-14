@@ -1,0 +1,28 @@
+CORAL CAVERN — COMPLETE MOCKUP PACKAGE (LATEST COLORFUL VERSION)
+
+MOCKUP KAISE KHOLNA HAI:
+1. Puri ZIP ko Extract All karein.
+2. offline-mockup folder kholen.
+3. index.html ko Chrome ya Edge mein double-click se kholen.
+
+ZIP ke andar se seedha HTML na kholen; pehle tamam files extract karein.
+
+IS PACKAGE MEIN:
+- 7 complete pages: Home, Shop, Services, Learn, About, Contact, Product Detail
+- 26 catalogue listings aur 21 actual product photographs
+- Tamam website photos, original supplied logo aur local fonts
+- Genuine NOAA deep-sea background video aur fallback poster
+- CSS, JavaScript aur catalogue data
+- offline-mockup: browser mein direct kholne ke liye portable copy
+- hosting-source: hosted preview ki original complete static website files
+- PHOTO-VIDEO-CREDITS.md: source details aur image/video credits
+
+Maps, directions aur external care article links ke liye internet chahiye.
+Baaki photos, fonts, styling, catalogue aur hero video local files mein included hain.
+
+Yeh client presentation mockup hai. Checkout aur inquiry forms simulated hain;
+live payment, orders ya customer inquiries process nahi hoti.
+
+DEVELOPER / HOSTING:
+hosting-source ka content kisi static web host ke root mein upload ho sakta hai.
+No npm install, dependency download ya build step required.
