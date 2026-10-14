@@ -24,3 +24,11 @@ Use `npx vercel --prod` when you are ready to publish the production deployment.
 
 The website is a presentation mockup. Checkout and inquiry submissions are
 simulated and do not process payments, orders, or messages.
+
+## Motion experience
+
+The hosted build uses pinned GSAP 3.13 and ScrollTrigger scripts from jsDelivr
+for scroll-linked reveals, parallax, a responsive reef-depth sequence and 3D
+pointer interactions. All essential content remains visible without GSAP, and
+the experience automatically simplifies for touch devices, smaller screens,
+data-saving mode and `prefers-reduced-motion` visitors.

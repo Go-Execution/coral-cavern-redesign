@@ -70,3 +70,196 @@ if(reefVideo){
  const videoVisibility=new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)reefVideo.pause();else if(!document.body.classList.contains('motion-paused'))reefVideo.play().catch(()=>{})},{threshold:.01});videoVisibility.observe(reefVideo);
  document.addEventListener('visibilitychange',()=>{if(document.hidden)reefVideo.pause();else if(!document.body.classList.contains('motion-paused'))reefVideo.play().catch(()=>{})});
 }
+
+// Immersive detail and motion layer. The site remains fully usable when GSAP
+// cannot load or when the visitor prefers reduced motion.
+const reefFacts=Object.freeze({
+ 'goniopora-garden':['Goniopora sp.','Moderate','Gentle'],
+ 'acantho-red':['Acanthophyllia deshayesiana','Low–moderate','Low'],
+ 'ricordea':['Ricordea yuma','Moderate','Low'],
+ 'banana-hammer':['Euphyllia ancora','Moderate','Gentle–moderate'],
+ 'skunk-shrimp':['Lysmata amboinensis','Any','Moderate'],
+ 'cat-eye-bubble':['Plerogyra sinuosa','Low–moderate','Low–moderate'],
+ 'daisy-coral':['Knopia / Clavularia','Moderate','Moderate'],
+ 'acanthophyllia':['Acanthophyllia deshayesiana','Low–moderate','Low'],
+ 'turban-snail':['Turbo sp.','Any','Moderate–strong'],
+ 'cynaria-ultra':['Cynarina lacrymalis','Low–moderate','Low'],
+ 'colorado-sunburst':['Entacmaea quadricolor','Moderate–high','Moderate'],
+ 'red-elegance':['Catalaphyllia jardinei','Moderate','Gentle'],
+ 'open-brain':['Trachyphyllia geoffroyi','Low–moderate','Low'],
+ 'goni-purple':['Goniopora sp.','Moderate','Gentle'],
+ 'electric-elegance':['Catalaphyllia jardinei','Moderate','Gentle'],
+ 'purple-gold':['Acanthophyllia deshayesiana','Low–moderate','Low'],
+ 'blasto-purple':['Blastomussa wellsi','Low–moderate','Low–moderate'],
+ 'flat-open-brain':['Trachyphyllia geoffroyi','Low–moderate','Low'],
+ 'blastomussa':['Blastomussa wellsi','Low–moderate','Low–moderate'],
+ 'biscuit-star':['Tosia sp.','Any','Low–moderate'],
+ 'carpet-anemone':['Stichodactyla sp.','Moderate–high','Moderate']
+});
+
+function fallbackFacts(product){
+ const category=product?.category||'';
+ if(category.includes('lps'))return['LPS coral specimen','Moderate','Gentle'];
+ if(category.includes('soft'))return['Soft coral specimen','Moderate','Low–moderate'];
+ if(category.includes('inverts'))return['Marine invertebrate','Species specific','Species specific'];
+ return['Aquarium essential','—','—'];
+}
+
+function enhanceProductCards(root=document){
+ $$('.product-card',root).forEach(productCard=>{
+  if(productCard.dataset.detailed==='true')return;
+  const productLink=$('a[href*="product"]',productCard);
+  if(!productLink)return;
+  let productId='';
+  try{productId=new URL(productLink.href,location.href).searchParams.get('id')||productLink.hash.slice(1)}catch{}
+  const product=products.find(item=>item.id===productId);
+  if(!product)return;
+  const facts=reefFacts[productId]||fallbackFacts(product);
+  const title=$('h3',productCard);
+  const price=$('.price-row',productCard);
+  if(title&&price){
+   const details=document.createElement('div');
+   details.className='specimen-details';
+   details.innerHTML=`<p class="scientific-name">${escapeHTML(facts[0])}</p><dl class="specimen-vitals"><div><dt>Light</dt><dd>${escapeHTML(facts[1])}</dd></div><div><dt>Flow</dt><dd>${escapeHTML(facts[2])}</dd></div></dl>`;
+   price.before(details);
+  }
+  productCard.dataset.detailed='true';
+  enableTilt(productCard);
+ });
+}
+
+function buildReefDepthStory(){
+ if(document.body.dataset.page!=='home'||$('.reef-depth-story'))return;
+ const insertionPoint=$('.featured');
+ if(!insertionPoint)return;
+ const assetPrefix=location.protocol==='file:'?'assets':'/assets';
+ const shopHref=location.protocol==='file:'?'shop.html':'/shop/';
+ const section=document.createElement('section');
+ section.className='section reef-depth-story';
+ section.id='reef-depth';
+ section.innerHTML=`
+  <div class="reef-depth-copy">
+   <p class="eyebrow">REEF PLACEMENT / AN IMMERSIVE FIELD GUIDE</p>
+   <h2>Descend through <em>the living reef.</em></h2>
+   <p>Light fades and water flow softens with depth. Scroll through three reef zones to see where different corals feel at home.</p>
+   <div class="reef-zone-list" role="list" aria-label="Coral placement zones">
+    <article class="reef-zone-card is-active" data-zone="0" role="listitem"><span>01 · TOP THIRD</span><h3>SPS ridge</h3><p>Bright light · Strong flow · Advanced care</p></article>
+    <article class="reef-zone-card" data-zone="1" role="listitem"><span>02 · MIDDLE ROCK</span><h3>LPS garden</h3><p>Moderate light · Gentle flow · Room to expand</p></article>
+    <article class="reef-zone-card" data-zone="2" role="listitem"><span>03 · SAND BED</span><h3>Soft & fleshy</h3><p>Lower light · Calm water · A forgiving start</p></article>
+   </div>
+   <a class="text-link" href="${shopHref}?category=corals">Find your coral level ↗</a>
+  </div>
+  <div class="reef-viewport" aria-label="Layered reef placement illustration">
+   <div class="reef-glow" aria-hidden="true"></div>
+   <div class="reef-orbit reef-orbit-one" aria-hidden="true"></div>
+   <div class="reef-orbit reef-orbit-two" aria-hidden="true"></div>
+   <figure class="reef-plane reef-plane-top" data-plane="0"><img src="${assetPrefix}/reef.jpg" alt="Bright upper reef habitat"><figcaption><b>SPS ridge</b><span>High light · strong current</span></figcaption></figure>
+   <figure class="reef-plane reef-plane-middle" data-plane="1"><img src="${assetPrefix}/banana-hammer.webp" alt="Branching Banana Hammer coral"><figcaption><b>LPS garden</b><span>Moderate light · gentle flow</span></figcaption></figure>
+   <figure class="reef-plane reef-plane-bottom" data-plane="2"><img src="${assetPrefix}/ricordea.webp" alt="Raspberry Neon Blast Ricordea coral"><figcaption><b>Sand-bed color</b><span>Lower light · calm water</span></figcaption></figure>
+   <div class="reef-depth-axis" aria-hidden="true"><span>BRIGHT</span><i></i><span>DEEP</span></div>
+   <div class="reef-scroll-cue" aria-hidden="true">SCROLL TO DESCEND <span>↓</span></div>
+  </div>`;
+ insertionPoint.before(section);
+}
+
+let gsapContext=null;
+function setActiveReefZone(index){
+ $$('.reef-zone-card').forEach((card,cardIndex)=>card.classList.toggle('is-active',cardIndex===index));
+ $$('.reef-plane').forEach((plane,planeIndex)=>plane.classList.toggle('is-active',planeIndex===index));
+}
+
+function enableTilt(element){
+ if(!element||element.dataset.tiltReady==='true'||motionReduced||!window.gsap||!matchMedia('(hover:hover) and (pointer:fine)').matches)return;
+ element.dataset.tiltReady='true';
+ element.classList.add('tilt-surface');
+ const rotateX=gsap.quickTo(element,'rotationX',{duration:.45,ease:'power3.out'});
+ const rotateY=gsap.quickTo(element,'rotationY',{duration:.45,ease:'power3.out'});
+ element.addEventListener('pointermove',event=>{
+  const bounds=element.getBoundingClientRect();
+  const x=(event.clientX-bounds.left)/bounds.width-.5;
+  const y=(event.clientY-bounds.top)/bounds.height-.5;
+  rotateX(y*-8);rotateY(x*10);
+  element.style.setProperty('--pointer-x',`${(x+.5)*100}%`);
+  element.style.setProperty('--pointer-y',`${(y+.5)*100}%`);
+ });
+ element.addEventListener('pointerleave',()=>{rotateX(0);rotateY(0)});
+}
+
+function initGsapExperience(){
+ if(motionReduced||!window.gsap||!window.ScrollTrigger){document.documentElement.classList.add('motion-fallback');return}
+ gsap.registerPlugin(ScrollTrigger);
+ document.documentElement.classList.add('gsap-ready');
+ gsapContext=gsap.context(()=>{
+  if($('.hero')){
+   gsap.timeline({defaults:{ease:'power3.out'}})
+    .from('.hero-eyebrow',{opacity:0,y:18,duration:.6})
+    .from('.hero-content h1',{opacity:0,y:55,rotationX:-8,duration:1},'-=.35')
+    .from('.hero-content>p:not(.eyebrow)',{opacity:0,y:25,duration:.7},'-=.55')
+    .from('.hero-buttons .button,.hero-proof span',{opacity:0,y:20,stagger:.08,duration:.55},'-=.45')
+    .from('.hero-specimen',{opacity:0,x:65,rotation:12,duration:.9},'-=.75');
+   gsap.to('.hero-media',{scale:1.16,yPercent:10,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:1}});
+   gsap.to('.hero-content',{yPercent:22,opacity:.2,ease:'none',scrollTrigger:{trigger:'.hero',start:'35% top',end:'bottom top',scrub:1}});
+  }
+
+  gsap.utils.toArray('.section-head,.page-hero>*,.reef-depth-copy>*').forEach(block=>{
+   gsap.from(block,{opacity:0,y:42,duration:.85,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:block,start:'top 88%',once:true}});
+  });
+  gsap.utils.toArray('.category-grid,.product-grid,.guide-grid,.work-grid,.service-grid,.service-process,.review-grid,.article-grid').forEach(grid=>{
+   const children=Array.from(grid.children);
+   gsap.from(children,{opacity:0,y:54,rotationX:-7,stagger:.08,duration:.85,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:grid,start:'top 84%',once:true}});
+  });
+  gsap.utils.toArray('.category-card img,.service-feature>img,.about-images>img,.article-card>img').forEach(image=>{
+   gsap.fromTo(image,{yPercent:-6,scale:1.08},{yPercent:6,scale:1.02,ease:'none',scrollTrigger:{trigger:image.parentElement,start:'top bottom',end:'bottom top',scrub:.8}});
+  });
+  if($('.collector-art'))gsap.fromTo('.collector-art',{rotationY:-9,rotationX:4,y:60},{rotationY:6,rotationX:-2,y:-30,ease:'none',scrollTrigger:{trigger:'.collector',start:'top bottom',end:'bottom top',scrub:1}});
+  if($('.vitals-console'))gsap.from('.vitals-console',{opacity:0,scale:.9,rotationY:-8,duration:1,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:'.vitals-console',start:'top 85%',once:true}});
+
+  ScrollTrigger.matchMedia({
+   '(min-width: 901px)':()=>{
+    if(!$('.reef-depth-story'))return;
+    gsap.set('.reef-plane-top',{z:80,y:-105,rotationX:55,scale:.82});
+    gsap.set('.reef-plane-middle',{z:0,y:5,rotationX:55,scale:.82});
+    gsap.set('.reef-plane-bottom',{z:-80,y:115,rotationX:55,scale:.82});
+    const reefTimeline=gsap.timeline({scrollTrigger:{trigger:'.reef-depth-story',start:'top 10%',end:'+=2100',pin:true,scrub:1,anticipatePin:1,onUpdate:self=>setActiveReefZone(Math.min(2,Math.floor(self.progress*3)))}});
+    reefTimeline
+     .to('.reef-plane-top',{z:230,y:-55,rotationX:8,scale:1.02,duration:1})
+     .to('.reef-plane-top',{z:40,y:-205,opacity:.22,rotationX:68,scale:.72,duration:1})
+     .to('.reef-plane-middle',{z:230,y:0,rotationX:8,scale:1.02,duration:1},'<')
+     .to('.reef-plane-middle',{z:35,y:-190,opacity:.22,rotationX:68,scale:.72,duration:1})
+     .to('.reef-plane-bottom',{z:230,y:45,rotationX:8,scale:1.02,duration:1},'<')
+     .to('.reef-glow',{scale:1.35,opacity:.9,duration:2},0);
+   },
+   '(max-width: 900px)':()=>{
+    gsap.utils.toArray('.reef-plane').forEach((plane,index)=>gsap.from(plane,{opacity:0,x:index%2?45:-45,rotationY:index%2?-8:8,duration:.8,immediateRender:false,scrollTrigger:{trigger:plane,start:'top 88%',once:true}}));
+   }
+  });
+
+  $$('.category-card,.service-feature,.guide-card,.collector-art,.vitals-console').forEach(enableTilt);
+  const scrollMeter=document.createElement('div');
+  scrollMeter.className='scroll-meter';
+  scrollMeter.setAttribute('aria-hidden','true');
+  scrollMeter.innerHTML='<span></span>';
+  document.body.append(scrollMeter);
+  ScrollTrigger.create({start:0,end:'max',onUpdate:self=>scrollMeter.style.setProperty('--scroll-progress',self.progress)});
+
+  if(matchMedia('(hover:hover) and (pointer:fine)').matches){
+   const pointerGlow=document.createElement('i');
+   pointerGlow.className='pointer-glow';
+   pointerGlow.setAttribute('aria-hidden','true');
+   document.body.append(pointerGlow);
+   const moveX=gsap.quickTo(pointerGlow,'x',{duration:.35,ease:'power3.out'});
+   const moveY=gsap.quickTo(pointerGlow,'y',{duration:.35,ease:'power3.out'});
+   window.addEventListener('pointermove',event=>{moveX(event.clientX);moveY(event.clientY)} ,{passive:true});
+  }
+ });
+ requestAnimationFrame(()=>ScrollTrigger.refresh());
+}
+
+buildReefDepthStory();
+enhanceProductCards();
+$$('.product-grid').forEach(grid=>new MutationObserver(()=>enhanceProductCards(grid)).observe(grid,{childList:true}));
+document.addEventListener('click',event=>{
+ if(!event.target.closest('[data-vital]')||motionReduced||!window.gsap)return;
+ gsap.fromTo('#vital-value',{opacity:0,y:14,scale:.96},{opacity:1,y:0,scale:1,duration:.55,ease:'back.out(1.8)'});
+});
+if(document.readyState==='complete')initGsapExperience();else window.addEventListener('load',initGsapExperience,{once:true});
