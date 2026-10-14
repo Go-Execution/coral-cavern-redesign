@@ -13,7 +13,7 @@ Presentation-only concept: seven static pages, original visual design, genuine p
 
 ## Photography
 
-No AI-generated images. Editorial photographs show inspiration, not Coral Cavern completed installations or livestock for sale.
+No AI-generated product images are used. Editorial photographs show inspiration, not Coral Cavern completed installations or livestock for sale. The homepage cinematic sequence is derived from client-supplied generative underwater footage and is presented only as an atmospheric brand illustration, not as documentary footage, a Coral Cavern installation or inventory photography.
 
 - Uriel Soberanes: https://unsplash.com/photos/close-up-photography-of-a-coral-LumQCasvDlw
 - Marek Okon: https://unsplash.com/photos/assorted-color-corals-Hq9ruEwKB3g
@@ -26,6 +26,6 @@ No AI-generated images. Editorial photographs show inspiration, not Coral Cavern
 
 JavaScript syntax and all seven pages' local asset/navigation targets checked. Browser visual QA was unavailable because the required control-browser skill was not installed in this managed environment.
 
-## Visual revision 2
+## Visual revision 3
 
-Replaced the restrained green/cream direction with a vibrant ocean palette: midnight blue, violet, coral pink/orange, turquoise and lime. Bold Mona Sans headings with selected Besley italic accents, rounded buttons, rounded product/category panels and a genuine deep-sea background video. Hero footage: Ancient Coral Garden, NOAA Ocean Exploration, 2019 Southeastern U.S. Deep-sea Exploration. Public-domain source with visible attribution: https://oceanexplorer.noaa.gov/multimedia/okeanos-explorations-ex1907-dailyupdates-coral-garden-coral-garden/ . Hero is an optimized, muted seven-second loop with a local poster, pause/play control, visibility pausing and reduced-motion/data-saving behavior. No AI generation used. Forms and checkout remain simulated.
+The former NOAA autoplay hero was removed and replaced with a scroll-controlled Canvas 2D image sequence generated from the client-supplied underwater video. The source is 1280 × 720, 24fps and 10 seconds long. The production sequence uses 200 desktop WebP frames and a separate 120-frame, center-composed mobile sequence. Frames load progressively around the visitor's current scroll position with bounded decoded-image caches. Reduced-motion, data-saving and load-failure paths use a static final reef poster with the brand content and working calls to action. Forms and checkout remain simulated.

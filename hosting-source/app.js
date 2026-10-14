@@ -47,7 +47,6 @@ document.addEventListener('click',e=>{
  if(b.dataset.vital)showVital(b.dataset.vital);
  if(b.matches('[data-checkout]')){closeDialog($('#cart-dialog'));$('#checkout-summary').innerHTML=`<div class="cart-total"><span>${count()} item${count()===1?'':'s'}</span><strong>${money(total())}</strong></div><p class="fine-print">Preview subtotal. Shipping and tax are not calculated.</p>`;$('#checkout-status').textContent='';openDialog('checkout-dialog')}
  if(b.matches('.menu-toggle')){let open=$('#header').classList.toggle('menu-open');b.setAttribute('aria-expanded',String(open));b.setAttribute('aria-label',open?'Close navigation':'Open navigation')}
- if(b.id==='motion-toggle'){let paused=document.body.classList.toggle('motion-paused');b.setAttribute('aria-pressed',String(!paused));b.innerHTML=paused?'Play video <span data-icon="play" aria-hidden="true"></span>':'Pause video <span data-icon="pause" aria-hidden="true"></span>';const video=$('#ocean-video');if(video){if(paused)video.pause();else video.play().catch(()=>toast('Tap again to play the reef video.'))}}
 });
 $('#global-search').addEventListener('input',renderSearch);
 $('#shop-search')?.addEventListener('input',renderShop);$('#shop-sort')?.addEventListener('change',renderShop);
@@ -55,21 +54,8 @@ $('#checkout-form').addEventListener('submit',e=>{e.preventDefault();$('#checkou
 $('#quote-form')?.addEventListener('submit',e=>{e.preventDefault();$('#quote-status').textContent='Form preview complete. This design mockup does not send inquiries.';toast('Visual form preview. Nothing was sent.')});
 let page=document.body.dataset.page;$$('nav a').forEach(a=>{if(a.pathname===`/${page}/`)a.setAttribute('aria-current','page')});
 const motionReduced=matchMedia('(prefers-reduced-motion: reduce)').matches;if(!motionReduced&&$('.water-specks')){for(let i=0;i<20;i++){let dot=document.createElement('i');dot.className='speck';dot.style.left=(37+Math.random()*60)+'%';dot.style.top=(20+Math.random()*78)+'%';dot.style.animationDelay=(-Math.random()*18)+'s';$('.water-specks').append(dot)}}
-if(motionReduced&&$('#motion-toggle')){$('#motion-toggle').textContent='Motion reduced';$('#motion-toggle').disabled=true;$('#motion-toggle').setAttribute('aria-pressed','false')}
 renderBag();updateSavedButtons();renderShop();renderProduct();
 if('IntersectionObserver' in window&&!motionReduced){document.documentElement.classList.add('js-reveal');let observer=new IntersectionObserver(entries=>{entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add('visible');observer.unobserve(entry.target)}})},{threshold:.08});$$('.reveal').forEach(el=>observer.observe(el));}
-
-// Genuine underwater footage; respect reduced motion and data-saving preferences.
-const reefVideo=$('#ocean-video');
-if(reefVideo){
- const saveData=!!navigator.connection?.saveData;
- function loadReefVideo(){document.body.classList.add('video-requested');const source=$('source',reefVideo);if(!source.src){source.src=source.dataset.src;reefVideo.load()}reefVideo.muted=true;reefVideo.play().catch(()=>{document.body.classList.add('motion-paused');$('#motion-toggle').innerHTML='Play video <span data-icon="play" aria-hidden="true"></span>';$('#motion-toggle').setAttribute('aria-pressed','false')})}
- if(motionReduced||saveData){reefVideo.removeAttribute('autoplay');document.body.classList.add('motion-paused');const control=$('#motion-toggle');control.disabled=false;control.innerHTML='Play video <span data-icon="play" aria-hidden="true"></span>';control.setAttribute('aria-pressed','false')}else loadReefVideo();
- $('#motion-toggle').addEventListener('click',()=>{if(!document.body.classList.contains('motion-paused'))loadReefVideo()});
- reefVideo.addEventListener('error',()=>{reefVideo.style.opacity='0';$('#motion-toggle').hidden=true});
- const videoVisibility=new IntersectionObserver(entries=>{if(!entries[0].isIntersecting)reefVideo.pause();else if(!document.body.classList.contains('motion-paused'))reefVideo.play().catch(()=>{})},{threshold:.01});videoVisibility.observe(reefVideo);
- document.addEventListener('visibilitychange',()=>{if(document.hidden)reefVideo.pause();else if(!document.body.classList.contains('motion-paused'))reefVideo.play().catch(()=>{})});
-}
 
 // Immersive detail and motion layer. The site remains fully usable when GSAP
 // cannot load or when the visitor prefers reduced motion.

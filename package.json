@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node scripts/build-icons.mjs",
-    "build:icons": "node scripts/build-icons.mjs"
+    "build": "node scripts/build-assets.mjs",
+    "build:assets": "node scripts/build-assets.mjs"
   },
   "dependencies": {
     "react": "19.3.1",
