@@ -20,12 +20,12 @@ Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -File -ErrorAction Silently
   Remove-Item -Force
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'minterpolate=fps=48:mi_mode=blend,scale=1152:648:flags=lanczos' `
+  -vf 'minterpolate=fps=60:mi_mode=blend,scale=1152:648:flags=lanczos' `
   -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
   (Join-Path $desktopRoot 'frame-%04d.webp')
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'crop=405:720:(iw-405)/2:0,minterpolate=fps=48:mi_mode=blend,scale=360:640:flags=lanczos' `
+  -vf 'crop=405:720:(iw-405)/2:0,minterpolate=fps=60:mi_mode=blend,scale=360:640:flags=lanczos' `
   -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
   (Join-Path $mobileRoot 'frame-%04d.webp')
 
@@ -43,23 +43,23 @@ function Complete-Sequence {
   }
 }
 
-Complete-Sequence -Root $desktopRoot -TargetCount 480
-Complete-Sequence -Root $mobileRoot -TargetCount 480
+Complete-Sequence -Root $desktopRoot -TargetCount 600
+Complete-Sequence -Root $mobileRoot -TargetCount 600
 
-ffmpeg -y -hide_banner -loglevel error -framerate 48 -i (Join-Path $desktopRoot 'frame-%04d.webp') `
-  -vf 'tile=4x2' -frames:v 60 `
+ffmpeg -y -hide_banner -loglevel error -framerate 60 -i (Join-Path $desktopRoot 'frame-%04d.webp') `
+  -vf 'tile=4x2' -frames:v 75 `
   -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
   (Join-Path $desktopRoot 'sheet-%03d.webp')
 
-ffmpeg -y -hide_banner -loglevel error -framerate 48 -i (Join-Path $mobileRoot 'frame-%04d.webp') `
-  -vf 'tile=4x2' -frames:v 60 `
+ffmpeg -y -hide_banner -loglevel error -framerate 60 -i (Join-Path $mobileRoot 'frame-%04d.webp') `
+  -vf 'tile=4x2' -frames:v 75 `
   -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
   (Join-Path $mobileRoot 'sheet-%03d.webp')
 
 Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start.webp') -Force
-Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final.webp') -Force
+Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0600.webp') -Destination (Join-Path $hostingRoot 'poster-final.webp') -Force
 Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start-mobile.webp') -Force
-Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final-mobile.webp') -Force
+Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0600.webp') -Destination (Join-Path $hostingRoot 'poster-final-mobile.webp') -Force
 
 Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -Filter 'frame-*.webp' | Remove-Item -Force
 
@@ -72,10 +72,10 @@ $desktopSheets = Get-ChildItem -LiteralPath $desktopRoot -Filter 'sheet-*.webp'
 $mobileSheets = Get-ChildItem -LiteralPath $mobileRoot -Filter 'sheet-*.webp'
 
 [pscustomobject]@{
-  DesktopFrames = 480
+  DesktopFrames = 600
   DesktopSheets = $desktopSheets.Count
   DesktopMegabytes = [math]::Round(($desktopSheets | Measure-Object Length -Sum).Sum / 1MB, 2)
-  MobileFrames = 480
+  MobileFrames = 600
   MobileSheets = $mobileSheets.Count
   MobileMegabytes = [math]::Round(($mobileSheets | Measure-Object Length -Sum).Sum / 1MB, 2)
 }

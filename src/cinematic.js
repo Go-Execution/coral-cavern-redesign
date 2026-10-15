@@ -19,8 +19,8 @@
   const assetRoot = location.protocol === 'file:' ? 'assets/cinematic' : '/assets/cinematic';
 
   const variants = {
-    desktop: { count: 480, directory: 'desktop', frameWidth: 1152, frameHeight: 648, framesPerSheet: 8, sheetColumns: 4, cacheSize: 6, concurrency: 4, lookAhead: 28, lookBehind: 12, damping: 13 },
-    mobile: { count: 480, directory: 'mobile', frameWidth: 360, frameHeight: 640, framesPerSheet: 8, sheetColumns: 4, cacheSize: 8, concurrency: 4, lookAhead: 24, lookBehind: 10, damping: 11 }
+    desktop: { count: 600, directory: 'desktop', frameWidth: 1152, frameHeight: 648, framesPerSheet: 8, sheetColumns: 4, cacheSize: 6, concurrency: 4, lookAhead: 35, lookBehind: 15, damping: 13 },
+    mobile: { count: 600, directory: 'mobile', frameWidth: 360, frameHeight: 640, framesPerSheet: 8, sheetColumns: 4, cacheSize: 8, concurrency: 4, lookAhead: 30, lookBehind: 12, damping: 11 }
   };
 
   let variant = mobileQuery.matches ? variants.mobile : variants.desktop;
@@ -100,7 +100,7 @@
         ? scrollDirection
         : target > lastRenderedFrame ? 1 : -1;
       const distance = Math.abs(target - lastRenderedFrame);
-      const maxStep = Math.min(mobileQuery.matches ? 6 : 8, distance);
+      const maxStep = Math.min(mobileQuery.matches ? 8 : 10, distance);
       for (let step = maxStep; step >= 1; step -= 1) {
         const candidate = lastRenderedFrame + renderDirection * step;
         const image = cache.get(sheetIndexForFrame(candidate));
@@ -212,7 +212,7 @@
     trimQueue(target);
     if (lastRenderedFrame >= 0 && Math.abs(target - lastRenderedFrame) > 1) {
       const bridgeDirection = target > lastRenderedFrame ? 1 : -1;
-      const bridgeLength = Math.min(20, Math.abs(target - lastRenderedFrame));
+      const bridgeLength = Math.min(25, Math.abs(target - lastRenderedFrame));
       for (let distance = 1; distance <= bridgeLength; distance += 1) {
         requestFrame(lastRenderedFrame + distance * bridgeDirection);
       }

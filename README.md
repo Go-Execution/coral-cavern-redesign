@@ -33,8 +33,8 @@ the experience automatically simplifies for touch devices, smaller screens,
 data-saving mode and `prefers-reduced-motion` visitors.
 
 The homepage opens with a native-scroll cinematic Canvas 2D sequence. Its
-client-supplied 1280 × 720, 24fps, 10-second source was motion-interpolated into 480
-desktop WebP frames and a separate 480-frame mobile crop. Frames are packed eight
+client-supplied 1280 × 720, 24fps, 10-second source was motion-interpolated to 60fps as 600
+desktop WebP frames and a separate 600-frame mobile crop. Frames are packed eight
 per sprite sheet to reduce request overhead, then loaded progressively around the
 current scroll position with limited concurrency and bounded decoded-image caches.
 Chapter copy and timings live in
