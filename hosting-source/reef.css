@@ -100,5 +100,41 @@
  .reef-zone-card{opacity:1!important;transform:none!important}
 }
 
+/* Brighter editorial imagery and customer-guidance copy. */
+.category-card img,
+.product-photo img,
+.collector-art>img,
+.guide-card>img,
+.service-feature>img,
+.about-images>img{
+ filter:brightness(1.08) saturate(1.12) contrast(1.02);
+}
+.category-card:after{
+ background:linear-gradient(0deg,rgba(8,13,53,.9) 0%,rgba(9,19,51,.3) 42%,transparent 76%);
+}
+.category-card>div{z-index:2}
+.category-card p{
+ color:#e2e6ff;
+ font-size:10px;
+ line-height:1.55;
+ max-width:25ch;
+ margin-top:9px;
+ text-shadow:0 2px 12px rgba(3,5,25,.85);
+}
+.service-feature:after{
+ background:linear-gradient(0deg,rgba(7,11,53,.88) 0%,rgba(7,18,58,.5) 36%,rgba(7,18,58,.08) 72%,transparent 100%);
+}
+.service-feature:nth-child(2):after{
+ background:linear-gradient(0deg,rgba(5,37,38,.88) 0%,rgba(5,43,43,.48) 36%,rgba(5,43,43,.08) 72%,transparent 100%);
+}
+.service-feature>div{text-shadow:0 2px 18px rgba(2,5,26,.8)}
+@media(max-width:560px){
+ .category-grid{grid-template-columns:1fr}
+ .category-card{height:360px}
+ .category-card p{font-size:11px;max-width:31ch}
+ .guide-card{display:block;min-height:0}
+ .guide-card>img{height:280px;min-height:0}
+}
+
 /* React Icons replace typographic UI symbols with accessible SVG artwork. */
 .react-icon{display:inline-flex;align-items:center;justify-content:center;line-height:1;vertical-align:-.12em;flex:0 0 auto}.react-icon svg{display:block;width:1em;height:1em;stroke-width:2}.icon-button .react-icon,.close .react-icon,[data-save] .react-icon,.qty-control .react-icon{font-size:1.2rem}.text-link .react-icon,.button .react-icon,.nav-quote .react-icon,.announcement a .react-icon{margin-left:.28em}.cart-button .leading-bag-icon{margin-right:.38rem}.hero-proof .leading-check-icon,.promise-points .leading-check-icon{color:var(--sea);margin-right:.1rem}.hero-proof span:nth-child(2) .leading-check-icon{color:var(--green)}.react-icons-ready .hero-proof span:before,.react-icons-ready .promise-points span:before,.react-icons-ready .faq-list summary:after{display:none!important;content:none!important}.faq-list summary{position:relative;padding-right:2.5rem}.faq-toggle-icon{position:absolute;right:4px;top:50%;font-size:1.15rem;color:var(--sea);transform:translateY(-50%)}.promise-mark .react-icon{font-size:.88em}.motion-control .react-icon,.reef-scroll-cue .react-icon{margin-left:.3rem}.stock-status .react-icon{font-size:.48em;margin-right:.45rem}.price-row button .react-icon{margin-right:.2rem}
