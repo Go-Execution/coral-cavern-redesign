@@ -185,6 +185,13 @@ body[data-page="home"] main>.promise{margin:24px 2.1%}
 .featured .price-row{padding-top:16px;margin:0 2px;border:0}
 .featured .price-row>span{font-size:18px;color:#fff}
 .featured .price-row button{background:#171a3b;border-color:#55597f;color:#f5f4ff;padding:9px 15px}
+.featured .specimen-details{margin:10px 2px 0;padding-top:0;border-top:0}
+.featured .scientific-name{min-height:20px;display:flex;align-items:center}
+.featured .specimen-vitals{gap:14px;margin:15px 0 0}
+.featured .specimen-vitals>div{min-height:66px;padding:12px 14px 13px;border:1px solid #34385f;border-radius:13px;background:rgba(14,18,52,.34);display:flex;flex-direction:column;justify-content:center}
+.featured .specimen-vitals dt{font-size:7px;line-height:1;letter-spacing:.14em;margin:0 0 9px}
+.featured .specimen-vitals dd{font-size:11px;line-height:1.25;margin:0;overflow:visible;text-overflow:clip}
+.featured .price-row{margin-top:5px}
 .featured .image-tag{background:#171832d9;color:#fff;border-color:#ffffff35}
 .collector{grid-template-columns:.8fr 1.45fr}
 .coral-guide{margin:24px 2.1%;border-radius:38px;overflow:clip}
@@ -215,6 +222,8 @@ body[data-page="home"] main>.promise{margin:24px 2.1%}
  .featured .product-grid{grid-template-columns:1fr;gap:44px}
  .featured .product-photo{aspect-ratio:1/1.08}
  .featured .product-card h3{font-size:22px;min-height:0}
+ .featured .specimen-vitals{gap:10px}
+ .featured .specimen-vitals>div{min-height:68px;padding:13px 12px 14px}
  .pond-seasons{gap:38px}
  .season-grid{grid-template-columns:1fr}
 }
