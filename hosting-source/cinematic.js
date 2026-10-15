@@ -19,8 +19,8 @@
   const assetRoot = location.protocol === 'file:' ? 'assets/cinematic' : '/assets/cinematic';
 
   const variants = {
-    desktop: { count: 600, directory: 'desktop', frameWidth: 1152, frameHeight: 648, framesPerSheet: 8, sheetColumns: 4, cacheSize: 6, concurrency: 4, lookAhead: 35, lookBehind: 15, damping: 13 },
-    mobile: { count: 600, directory: 'mobile', frameWidth: 360, frameHeight: 640, framesPerSheet: 8, sheetColumns: 4, cacheSize: 8, concurrency: 4, lookAhead: 30, lookBehind: 12, damping: 11 }
+    desktop: { count: 600, directory: 'desktop', frameWidth: 1152, frameHeight: 648, framesPerSheet: 4, sheetColumns: 2, cacheSize: 12, concurrency: 5, lookAhead: 48, lookBehind: 24, damping: 26 },
+    mobile: { count: 600, directory: 'mobile', frameWidth: 360, frameHeight: 640, framesPerSheet: 4, sheetColumns: 2, cacheSize: 16, concurrency: 5, lookAhead: 44, lookBehind: 22, damping: 24 }
   };
 
   let variant = mobileQuery.matches ? variants.mobile : variants.desktop;
@@ -36,6 +36,7 @@
   let requested = new Set();
   let queue = [];
   let activeLoads = 0;
+  let urgentSheet = null;
   let loadGeneration = 0;
   let resizeTimer;
 
@@ -85,7 +86,7 @@
 
     context.clearRect(0, 0, canvas.width, canvas.height);
     context.imageSmoothingEnabled = true;
-    context.imageSmoothingQuality = 'high';
+    context.imageSmoothingQuality = 'medium';
     context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
     lastRenderedFrame = index;
     canvas.dataset.renderedFrame = String(index);
@@ -95,12 +96,14 @@
   }
 
   function nearestLoaded(target) {
+    const exactImage = cache.get(sheetIndexForFrame(target));
+    if (exactImage) return [target, exactImage];
     if (lastRenderedFrame >= 0) {
       const renderDirection = target === lastRenderedFrame
         ? scrollDirection
         : target > lastRenderedFrame ? 1 : -1;
       const distance = Math.abs(target - lastRenderedFrame);
-      const maxStep = Math.min(mobileQuery.matches ? 8 : 10, distance);
+      const maxStep = Math.min(mobileQuery.matches ? 4 : 5, distance);
       for (let step = maxStep; step >= 1; step -= 1) {
         const candidate = lastRenderedFrame + renderDirection * step;
         const image = cache.get(sheetIndexForFrame(candidate));
@@ -155,7 +158,7 @@
     const loadFocus = Math.abs(gap) > 4
       ? lastRenderedFrame + Math.sign(gap) * Math.min(6, Math.abs(gap))
       : currentFrame;
-    const loadFocusSheet = sheetIndexForFrame(loadFocus);
+    const loadFocusSheet = urgentSheet ?? sheetIndexForFrame(loadFocus);
     queue.sort((a, b) => Math.abs(a - loadFocusSheet) - Math.abs(b - loadFocusSheet));
     while (activeLoads < variant.concurrency && queue.length) {
       const index = queue.shift();
@@ -173,6 +176,7 @@
         }
         if (!destroyed) {
           cache.set(index, image);
+          if (index === urgentSheet) urgentSheet = null;
           renderBestFrame(currentFrame);
           evictDistantFrames();
         }
@@ -315,10 +319,26 @@
     targetProgress = nextProgress;
     const destinationFrame = Math.round(targetProgress * (variant.count - 1));
     canvas.dataset.destinationFrame = String(destinationFrame);
+    urgentSheet = sheetIndexForFrame(destinationFrame);
+    trimQueue(destinationFrame);
     requestFrame(destinationFrame);
     requestFrame(destinationFrame + scrollDirection);
+    queue.sort((a, b) => (a === urgentSheet ? -1 : b === urgentSheet ? 1 : Math.abs(a - urgentSheet) - Math.abs(b - urgentSheet)));
     pumpQueue();
     if (!animationFrame) animationFrame = requestAnimationFrame(animateTowardsTarget);
+  }
+
+  async function warmSequenceAssets() {
+    if (saveData || destroyed) return;
+    const sheetCount = Math.ceil(variant.count / variant.framesPerSheet);
+    const currentDirectory = variant.directory;
+    const currentGeneration = loadGeneration;
+    for (let start = 0; start < sheetCount && !destroyed; start += 4) {
+      if (currentGeneration !== loadGeneration || currentDirectory !== variant.directory) return;
+      const batch = Array.from({ length: Math.min(4, sheetCount - start) }, (_, offset) => start + offset);
+      await Promise.all(batch.map(index => fetch(sheetSource(index), { cache: 'force-cache', priority: 'low' }).then(response => response.arrayBuffer()).catch(() => null)));
+      await new Promise(resolve => setTimeout(resolve, 24));
+    }
   }
 
   function activateStaticExperience() {
@@ -348,6 +368,7 @@
     requested = new Set();
     queue = [];
     activeLoads = 0;
+    urgentSheet = null;
     lastRenderedFrame = -1;
     currentFrame = Math.round(currentProgress * (variant.count - 1));
     hero.classList.remove('sequence-ready', 'sequence-failed');
@@ -375,6 +396,7 @@
 
   resizeCanvas();
   seedSequence();
+  setTimeout(warmSequenceAssets, 900);
   targetProgress = calculateProgress();
   currentProgress = targetProgress;
   canvas.dataset.destinationFrame = String(Math.round(targetProgress * (variant.count - 1)));

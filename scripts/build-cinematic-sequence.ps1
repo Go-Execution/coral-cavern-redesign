@@ -20,13 +20,13 @@ Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -File -ErrorAction Silently
   Remove-Item -Force
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'minterpolate=fps=60:mi_mode=blend,scale=1152:648:flags=lanczos' `
-  -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
+  -vf 'minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1:mb_size=16,scale=1152:648:flags=lanczos,unsharp=5:5:0.32:3:3:0.12' `
+  -c:v libwebp -q:v 62 -compression_level 5 -preset picture `
   (Join-Path $desktopRoot 'frame-%04d.webp')
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'crop=405:720:(iw-405)/2:0,minterpolate=fps=60:mi_mode=blend,scale=360:640:flags=lanczos' `
-  -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
+  -vf 'crop=405:720:(iw-405)/2:0,minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1:mb_size=16,scale=360:640:flags=lanczos,unsharp=5:5:0.28:3:3:0.1' `
+  -c:v libwebp -q:v 60 -compression_level 5 -preset picture `
   (Join-Path $mobileRoot 'frame-%04d.webp')
 
 function Complete-Sequence {
@@ -47,13 +47,13 @@ Complete-Sequence -Root $desktopRoot -TargetCount 600
 Complete-Sequence -Root $mobileRoot -TargetCount 600
 
 ffmpeg -y -hide_banner -loglevel error -framerate 60 -i (Join-Path $desktopRoot 'frame-%04d.webp') `
-  -vf 'tile=4x2' -frames:v 75 `
-  -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
+  -vf 'tile=2x2' -frames:v 150 `
+  -c:v libwebp -q:v 62 -compression_level 5 -preset picture `
   (Join-Path $desktopRoot 'sheet-%03d.webp')
 
 ffmpeg -y -hide_banner -loglevel error -framerate 60 -i (Join-Path $mobileRoot 'frame-%04d.webp') `
-  -vf 'tile=4x2' -frames:v 75 `
-  -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
+  -vf 'tile=2x2' -frames:v 150 `
+  -c:v libwebp -q:v 60 -compression_level 5 -preset picture `
   (Join-Path $mobileRoot 'sheet-%03d.webp')
 
 Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start.webp') -Force
