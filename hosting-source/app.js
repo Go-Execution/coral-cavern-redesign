@@ -274,6 +274,20 @@ function alignHomepageWithReference(){
   const extraIds=['skunk-shrimp','turban-snail','daisy-coral','cynaria-ultra'];
   if(grid)extraIds.forEach(id=>{if(!grid.querySelector(`[href*="id=${id}"]`)){const product=products.find(item=>item.id===id);if(product)grid.insertAdjacentHTML('beforeend',card(product));}});
  }
+ const collector=$('.collector');
+ if(collector&&!$('.collector-bento',collector)){
+  $('.collector-art',collector)?.remove();
+  const bento=document.createElement('div');
+  bento.className='collector-bento reveal';
+  const pieces=[
+   ['acantho-red','Acanthophyllia · one of one','A rare tri-color mouth on a blazing red body.'],
+   ['acanthophyllia','Acanthophyllia · showpiece','Swirled red and green with the presence to anchor an aquascape.'],
+   ['red-elegance','Elegance coral · WYSIWYG','A vivid red mouth surrounded by long yellow-tipped movement.'],
+   ['goni-purple','Goniopora · aquacultured frag','Purple polyps and a bright yellow rim that comes alive in gentle flow.']
+  ];
+  bento.innerHTML=pieces.map(([id,label,description],index)=>{const product=products.find(item=>item.id===id);if(!product||!product.image)return'';return `<article class="collector-piece${index===0?' is-featured':''}"><a class="collector-piece-media" href="/product/?id=${product.id}"><img src="${product.image}" alt="${escapeHTML(product.name)} collector coral" loading="lazy" decoding="async"><span>${escapeHTML(label)}</span></a><div class="collector-piece-info"><div><small>${escapeHTML(label)}</small><h3><a href="/product/?id=${product.id}">${escapeHTML(product.name)}</a></h3><p>${escapeHTML(description)}</p></div><div><strong>${money(product.price)}</strong><button data-add="${product.id}" aria-label="Add ${escapeHTML(product.name)} to preview cart"><span data-icon="plus" aria-hidden="true"></span> Add</button></div></div></article>`}).join('');
+  collector.append(bento);
+ }
  const about=$('.about-split');
  if(about&&!$('.pond-seasons')){
   const pond=document.createElement('section');
