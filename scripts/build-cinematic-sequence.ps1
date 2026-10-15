@@ -15,7 +15,9 @@ if (-not (Test-Path -LiteralPath $SourceVideo)) {
 }
 
 New-Item -ItemType Directory -Force -Path $desktopRoot, $mobileRoot | Out-Null
-Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -Filter 'frame-*.webp' -ErrorAction SilentlyContinue | Remove-Item -Force
+Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -File -ErrorAction SilentlyContinue |
+  Where-Object { $_.Name -like 'frame-*.webp' -or $_.Name -like 'sheet-*.webp' } |
+  Remove-Item -Force
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
   -vf 'minterpolate=fps=48:mi_mode=blend,scale=1152:648:flags=lanczos' `
@@ -44,21 +46,36 @@ function Complete-Sequence {
 Complete-Sequence -Root $desktopRoot -TargetCount 480
 Complete-Sequence -Root $mobileRoot -TargetCount 480
 
+ffmpeg -y -hide_banner -loglevel error -framerate 48 -i (Join-Path $desktopRoot 'frame-%04d.webp') `
+  -vf 'tile=4x2' -frames:v 60 `
+  -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
+  (Join-Path $desktopRoot 'sheet-%03d.webp')
+
+ffmpeg -y -hide_banner -loglevel error -framerate 48 -i (Join-Path $mobileRoot 'frame-%04d.webp') `
+  -vf 'tile=4x2' -frames:v 60 `
+  -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
+  (Join-Path $mobileRoot 'sheet-%03d.webp')
+
 Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start.webp') -Force
 Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final.webp') -Force
 Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start-mobile.webp') -Force
 Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final-mobile.webp') -Force
 
+Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -Filter 'frame-*.webp' | Remove-Item -Force
+
 New-Item -ItemType Directory -Force -Path $offlineRoot | Out-Null
+Get-ChildItem -LiteralPath (Join-Path $offlineRoot 'desktop'), (Join-Path $offlineRoot 'mobile') -Filter 'frame-*.webp' -ErrorAction SilentlyContinue | Remove-Item -Force
 & robocopy $hostingRoot $offlineRoot /E /COPY:DAT /DCOPY:DAT /R:10 /W:2 /NFL /NDL /NJH /NJS /NP | Out-Null
 if ($LASTEXITCODE -gt 7) { throw "Unable to mirror cinematic assets (robocopy exit code $LASTEXITCODE)" }
 
-$desktopFrames = Get-ChildItem -LiteralPath $desktopRoot -Filter '*.webp'
-$mobileFrames = Get-ChildItem -LiteralPath $mobileRoot -Filter '*.webp'
+$desktopSheets = Get-ChildItem -LiteralPath $desktopRoot -Filter 'sheet-*.webp'
+$mobileSheets = Get-ChildItem -LiteralPath $mobileRoot -Filter 'sheet-*.webp'
 
 [pscustomobject]@{
-  DesktopFrames = $desktopFrames.Count
-  DesktopMegabytes = [math]::Round(($desktopFrames | Measure-Object Length -Sum).Sum / 1MB, 2)
-  MobileFrames = $mobileFrames.Count
-  MobileMegabytes = [math]::Round(($mobileFrames | Measure-Object Length -Sum).Sum / 1MB, 2)
+  DesktopFrames = 480
+  DesktopSheets = $desktopSheets.Count
+  DesktopMegabytes = [math]::Round(($desktopSheets | Measure-Object Length -Sum).Sum / 1MB, 2)
+  MobileFrames = 480
+  MobileSheets = $mobileSheets.Count
+  MobileMegabytes = [math]::Round(($mobileSheets | Measure-Object Length -Sum).Sum / 1MB, 2)
 }

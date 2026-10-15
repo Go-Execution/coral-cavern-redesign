@@ -19,8 +19,8 @@
   const assetRoot = location.protocol === 'file:' ? 'assets/cinematic' : '/assets/cinematic';
 
   const variants = {
-    desktop: { count: 480, directory: 'desktop', cacheSize: 36, concurrency: 6, lookAhead: 28, lookBehind: 12, damping: 13 },
-    mobile: { count: 480, directory: 'mobile', cacheSize: 48, concurrency: 5, lookAhead: 24, lookBehind: 10, damping: 11 }
+    desktop: { count: 480, directory: 'desktop', frameWidth: 1152, frameHeight: 648, framesPerSheet: 8, sheetColumns: 4, cacheSize: 6, concurrency: 4, lookAhead: 28, lookBehind: 12, damping: 13 },
+    mobile: { count: 480, directory: 'mobile', frameWidth: 360, frameHeight: 640, framesPerSheet: 8, sheetColumns: 4, cacheSize: 8, concurrency: 4, lookAhead: 24, lookBehind: 10, damping: 11 }
   };
 
   let variant = mobileQuery.matches ? variants.mobile : variants.desktop;
@@ -40,7 +40,8 @@
   let resizeTimer;
 
   const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
-  const frameSource = index => `${assetRoot}/${variant.directory}/frame-${String(index + 1).padStart(4, '0')}.webp`;
+  const sheetIndexForFrame = index => Math.floor(clamp(index, 0, variant.count - 1) / variant.framesPerSheet);
+  const sheetSource = index => `${assetRoot}/${variant.directory}/sheet-${String(index + 1).padStart(3, '0')}.webp`;
 
   function syncStageMetrics() {
     const headerHeight = Math.max(0, Math.round(siteHeader?.getBoundingClientRect().height || 0));
@@ -62,19 +63,24 @@
 
   function drawCover(image, index) {
     if (!image?.complete || !image.naturalWidth || !canvas.width || !canvas.height) return false;
-    const sourceRatio = image.naturalWidth / image.naturalHeight;
+    const frameOffset = index % variant.framesPerSheet;
+    const frameColumn = frameOffset % variant.sheetColumns;
+    const frameRow = Math.floor(frameOffset / variant.sheetColumns);
+    const frameLeft = frameColumn * variant.frameWidth;
+    const frameTop = frameRow * variant.frameHeight;
+    const sourceRatio = variant.frameWidth / variant.frameHeight;
     const canvasRatio = canvas.width / canvas.height;
-    let sourceWidth = image.naturalWidth;
-    let sourceHeight = image.naturalHeight;
-    let sourceX = 0;
-    let sourceY = 0;
+    let sourceWidth = variant.frameWidth;
+    let sourceHeight = variant.frameHeight;
+    let sourceX = frameLeft;
+    let sourceY = frameTop;
 
     if (sourceRatio > canvasRatio) {
-      sourceWidth = image.naturalHeight * canvasRatio;
-      sourceX = (image.naturalWidth - sourceWidth) / 2;
+      sourceWidth = variant.frameHeight * canvasRatio;
+      sourceX += (variant.frameWidth - sourceWidth) / 2;
     } else {
-      sourceHeight = image.naturalWidth / canvasRatio;
-      sourceY = (image.naturalHeight - sourceHeight) / 2;
+      sourceHeight = variant.frameWidth / canvasRatio;
+      sourceY += (variant.frameHeight - sourceHeight) / 2;
     }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
@@ -93,25 +99,25 @@
       const renderDirection = target === lastRenderedFrame
         ? scrollDirection
         : target > lastRenderedFrame ? 1 : -1;
-      const directional = [...cache.entries()].filter(([index]) => renderDirection > 0
-        ? index >= lastRenderedFrame && index <= target
-        : index <= lastRenderedFrame && index >= target);
-      if (directional.length) {
-        const maxStep = mobileQuery.matches ? 6 : 8;
-        const bridged = directional.filter(([index]) => Math.abs(index - lastRenderedFrame) <= maxStep);
-        if (!bridged.length) return null;
-        bridged.sort((a, b) => Math.abs(b[0] - lastRenderedFrame) - Math.abs(a[0] - lastRenderedFrame));
-        return bridged[0];
+      const distance = Math.abs(target - lastRenderedFrame);
+      const maxStep = Math.min(mobileQuery.matches ? 6 : 8, distance);
+      for (let step = maxStep; step >= 1; step -= 1) {
+        const candidate = lastRenderedFrame + renderDirection * step;
+        const image = cache.get(sheetIndexForFrame(candidate));
+        if (image) return [candidate, image];
       }
       return null;
     }
     let nearest = null;
-    let distance = Infinity;
-    for (const [index, image] of cache) {
-      const candidateDistance = Math.abs(index - target);
-      if (candidateDistance < distance) {
-        nearest = [index, image];
-        distance = candidateDistance;
+    let nearestDistance = Infinity;
+    for (const [sheetIndex, image] of cache) {
+      const firstFrame = sheetIndex * variant.framesPerSheet;
+      const lastFrame = Math.min(variant.count - 1, firstFrame + variant.framesPerSheet - 1);
+      const candidate = clamp(target, firstFrame, lastFrame);
+      const candidateDistance = Math.abs(candidate - target);
+      if (candidateDistance < nearestDistance) {
+        nearest = [candidate, image];
+        nearestDistance = candidateDistance;
       }
     }
     return nearest;
@@ -124,13 +130,15 @@
 
   function evictDistantFrames() {
     if (cache.size <= variant.cacheSize) return;
-    const protectedFrames = new Set([0, variant.count - 1]);
+    const finalSheet = sheetIndexForFrame(variant.count - 1);
+    const protectedSheets = new Set([0, finalSheet]);
     const evictionFocus = lastRenderedFrame >= 0 && Math.abs(currentFrame - lastRenderedFrame) > variant.lookAhead
       ? lastRenderedFrame
       : currentFrame;
+    const focusSheet = sheetIndexForFrame(evictionFocus);
     const removable = [...cache.keys()]
-      .filter(index => !protectedFrames.has(index))
-      .sort((a, b) => Math.abs(b - evictionFocus) - Math.abs(a - evictionFocus));
+      .filter(index => !protectedSheets.has(index))
+      .sort((a, b) => Math.abs(b - focusSheet) - Math.abs(a - focusSheet));
 
     while (cache.size > variant.cacheSize && removable.length) {
       const index = removable.shift();
@@ -147,7 +155,8 @@
     const loadFocus = Math.abs(gap) > 4
       ? lastRenderedFrame + Math.sign(gap) * Math.min(6, Math.abs(gap))
       : currentFrame;
-    queue.sort((a, b) => Math.abs(a - loadFocus) - Math.abs(b - loadFocus));
+    const loadFocusSheet = sheetIndexForFrame(loadFocus);
+    queue.sort((a, b) => Math.abs(a - loadFocusSheet) - Math.abs(b - loadFocusSheet));
     while (activeLoads < variant.concurrency && queue.length) {
       const index = queue.shift();
       if (cache.has(index)) continue;
@@ -155,7 +164,7 @@
       const generation = loadGeneration;
       const image = new Image();
       image.decoding = 'async';
-      image.fetchPriority = Math.abs(index - currentFrame) <= 2 ? 'high' : 'auto';
+      image.fetchPriority = Math.abs(index - sheetIndexForFrame(currentFrame)) <= 1 ? 'high' : 'auto';
       image.onload = async () => {
         try { await image.decode?.(); } catch {}
         if (generation !== loadGeneration) {
@@ -177,21 +186,23 @@
         if (index === 0 && cache.size === 0) hero.classList.add('sequence-failed');
         pumpQueue();
       };
-      image.src = frameSource(index);
+      image.src = sheetSource(index);
     }
   }
 
   function requestFrame(index) {
-    const normalized = clamp(Math.round(index), 0, variant.count - 1);
+    const normalized = sheetIndexForFrame(Math.round(index));
     if (requested.has(normalized) || cache.has(normalized)) return;
     requested.add(normalized);
     queue.push(normalized);
   }
 
   function trimQueue(target) {
-    const keepDistance = Math.max(32, variant.lookAhead * 2);
+    const keepDistance = Math.ceil(Math.max(32, variant.lookAhead * 2) / variant.framesPerSheet);
+    const targetSheet = sheetIndexForFrame(target);
+    const finalSheet = sheetIndexForFrame(variant.count - 1);
     queue = queue.filter(index => {
-      const keep = Math.abs(index - target) <= keepDistance || index === 0 || index === variant.count - 1;
+      const keep = Math.abs(index - targetSheet) <= keepDistance || index === 0 || index === finalSheet;
       if (!keep) requested.delete(index);
       return keep;
     });
@@ -279,6 +290,13 @@
     if (Math.abs(remaining) <= .00012) {
       currentProgress = targetProgress;
       renderProgress(currentProgress);
+      renderBestFrame(currentFrame);
+      const canContinueRendering = lastRenderedFrame !== currentFrame
+        && (activeLoads > 0 || queue.length > 0 || nearestLoaded(currentFrame));
+      if (canContinueRendering) {
+        animationFrame = requestAnimationFrame(animateTowardsTarget);
+        return;
+      }
       lastTick = 0;
       return;
     }
@@ -287,6 +305,7 @@
     const blend = 1 - Math.exp(-variant.damping * delta / 1000);
     currentProgress += remaining * blend;
     renderProgress(currentProgress);
+    renderBestFrame(currentFrame);
     animationFrame = requestAnimationFrame(animateTowardsTarget);
   }
 
