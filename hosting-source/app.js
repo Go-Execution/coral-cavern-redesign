@@ -243,6 +243,48 @@ function initGsapExperience(){
  requestAnimationFrame(()=>ScrollTrigger.refresh());
 }
 
+function alignHomepageWithReference(){
+ if(document.body.dataset.page!=='home'||document.body.dataset.referenceLayout==='true')return;
+ document.body.dataset.referenceLayout='true';
+ const categories=$('.categories');
+ if(categories){
+  const paths=document.createElement('section');
+  paths.className='section ref-paths';
+  paths.setAttribute('aria-labelledby','ref-paths-title');
+  paths.innerHTML=`<div class="section-head reveal"><div><p class="eyebrow">START WHERE YOU ARE</p><h2 id="ref-paths-title">What brings you<br>to the <em>Cavern?</em></h2></div><p>Choose the path that sounds most like your tank today. Each one leads to the livestock, planning or hands-on care that fits next.</p></div><div class="ref-path-grid"><a href="/shop/"><span data-icon="bag" aria-hidden="true"></span><small>SHOPPING FOR LIVESTOCK</small><h3>Find the right animal.</h3><p>Corals, fish and cleanup crew photographed with the detail you need to choose confidently.</p><b>Browse the tanks <span data-icon="arrow-right" aria-hidden="true"></span></b></a><a href="/services/#design"><span data-icon="star" aria-hidden="true"></span><small>PLANNING A NEW TANK</small><h3>Build it around real life.</h3><p>Design, equipment and livestock planning sized to your room, routine and budget.</p><b>Plan a tank <span data-icon="arrow-right" aria-hidden="true"></span></b></a><a href="/services/#maintenance"><span data-icon="shield" aria-hidden="true"></span><small>KEEPING A TANK BEAUTIFUL</small><h3>Protect the balance.</h3><p>Scheduled cleaning, testing and equipment care for established home and business systems.</p><b>Book maintenance <span data-icon="arrow-right" aria-hidden="true"></span></b></a><a href="/services/#ponds"><span data-icon="circle-fill" aria-hidden="true"></span><small>CARING FOR A POND</small><h3>Follow the season.</h3><p>Cleanouts, filtration, water quality and koi care shaped around Oregon weather.</p><b>See pond care <span data-icon="arrow-right" aria-hidden="true"></span></b></a></div>`;
+  categories.before(paths);
+  const eyebrow=$('.section-head .eyebrow',categories);
+  const title=$('.section-head h2',categories);
+  const intro=$('.section-head>p',categories);
+  if(eyebrow)eyebrow.textContent='SHOP';
+  if(title)title.innerHTML='In the tanks <em>now.</em>';
+  if(intro)intro.textContent='We photograph livestock under reef lighting so you can study the color, shape and character before confirming the exact animal.';
+  const categoryGrid=$('.category-grid',categories);
+  if(categoryGrid&&!categoryGrid.querySelector('[href*="frags"]'))categoryGrid.children[0]?.insertAdjacentHTML('afterend','<a href="/shop/?category=frags" class="category-card reveal"><img src="/assets/goni-garden.webp" alt="Aquacultured coral frags on a reef rack" loading="lazy" decoding="async"><div><small>AQUACULTURED STARTS</small><h3>Frags<span><span data-icon="arrow-up-right" aria-hidden="true"></span></span></h3><p>Tank-grown starts that bring serious color to a reef while leaving room to grow.</p></div></a>');
+ }
+ const featured=$('.featured');
+ if(featured){
+  const eyebrow=$('.section-head .eyebrow',featured);
+  const title=$('.section-head h2',featured);
+  const intro=$('.section-head>p',featured);
+  if(eyebrow)eyebrow.textContent='AVAILABLE LIVESTOCK';
+  if(title)title.innerHTML='Photographed here.<br><em>Chosen by you.</em>';
+  if(intro)intro.textContent='The photograph, care profile and price stay together, so comparison feels clear instead of crowded.';
+  const grid=$('.product-grid',featured);
+  const extraIds=['skunk-shrimp','turban-snail','daisy-coral','cynaria-ultra'];
+  if(grid)extraIds.forEach(id=>{if(!grid.querySelector(`[href*="id=${id}"]`)){const product=products.find(item=>item.id===id);if(product)grid.insertAdjacentHTML('beforeend',card(product));}});
+ }
+ const about=$('.about-split');
+ if(about&&!$('.pond-seasons')){
+  const pond=document.createElement('section');
+  pond.className='section pond-seasons';
+  pond.id='ponds';
+  pond.innerHTML=`<div class="pond-copy reveal"><p class="eyebrow">NEW · POND MAINTENANCE</p><h2>Ponds,<br><em>too.</em></h2><p>Koi ponds and water features need the same steady attention as a reef. We clean, balance and care for ponds around Salem, season by season.</p><a class="button" href="/services/#quote">Book pond care <span data-icon="arrow-right" aria-hidden="true"></span></a></div><div class="season-grid"><article><small>SPRING</small><h3>Open up.</h3><p>Clear winter debris, restart pumps and filters, and test the water before regular feeding resumes.</p></article><article><small>SUMMER</small><h3>Keep it clear.</h3><p>Manage algae, rinse filters and protect oxygen levels through the warmest days.</p></article><article><small>FALL</small><h3>Net and trim.</h3><p>Catch falling leaves, cut back plants and ease feeding as the water cools.</p></article><article><small>WINTER</small><h3>Rest easy.</h3><p>Check aeration and pumps while the koi slow down through the wet months.</p></article></div>`;
+  about.before(pond);
+ }
+}
+
+alignHomepageWithReference();
 buildReefDepthStory();
 enhanceProductCards();
 $$('.product-grid').forEach(grid=>new MutationObserver(()=>enhanceProductCards(grid)).observe(grid,{childList:true}));

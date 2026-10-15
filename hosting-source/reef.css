@@ -136,5 +136,88 @@
  .guide-card>img{height:280px;min-height:0}
 }
 
++/* Reference-led post-hero layout. The cinematic hero remains unchanged. */
+body[data-page="home"]{background:#080a22}
+body[data-page="home"] main>.section:not(.coral-guide):not(.reviews):not(.quote-section){
+ margin:24px 2.1%;
+ width:auto;
+ border-radius:38px;
+ overflow:clip;
+}
+body[data-page="home"] main>.promise{margin:24px 2.1%}
+.ref-paths{background:#eef1ff;color:#111637}
+.ref-paths em{color:#7150d0}
+.ref-paths .eyebrow{color:#7454d6}
+.ref-paths .section-head>p{color:#5c6589;max-width:420px}
+.ref-path-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ref-path-grid>a{min-height:275px;padding:27px;border:1px solid #d2d7ef;border-radius:26px;background:#fff;color:#151a42;display:flex;flex-direction:column;transition:transform .35s,border-color .35s,box-shadow .35s}
+.ref-path-grid>a:hover{transform:translateY(-5px);border-color:#9878e8;box-shadow:0 18px 42px #43307d18}
+.ref-path-grid>a>.react-icon{font-size:27px;color:#7654d7;margin-bottom:40px}
+.ref-path-grid>a:nth-child(2)>.react-icon{color:#f0789e}
+.ref-path-grid>a:nth-child(3)>.react-icon{color:#22a89f}
+.ref-path-grid>a:nth-child(4)>.react-icon{color:#ef8a45}
+.ref-path-grid small{font-size:8px;letter-spacing:.12em;color:#767ca2;font-weight:800}
+.ref-path-grid h3{font-size:22px;letter-spacing:-.035em;margin:11px 0 9px}
+.ref-path-grid p{font-size:11px;line-height:1.75;color:#69708f}
+.ref-path-grid b{margin-top:auto;padding-top:20px;font-size:10px;color:#6848c3;display:flex;align-items:center;gap:8px}
+.categories{background:radial-gradient(ellipse at 85% 10%,#32296966,transparent 55%),#090b29}
+.categories .section-head{margin-bottom:48px}
+.categories .category-grid{grid-template-columns:repeat(5,1fr);gap:14px}
+.categories .category-card{height:295px;border-radius:25px}
+.categories .category-card p{display:none}
+.categories .category-card>div{bottom:18px;left:18px;right:18px}
+.categories .category-card h3{font-size:25px;margin:5px 0 0}
+.categories .category-card small{font-size:7px}
+.featured{background:radial-gradient(ellipse at 10% 16%,#4e244a55,transparent 52%),#07091f}
+.featured .product-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:52px 24px}
+.featured .product-card{padding:0;border:0;background:transparent;border-radius:0;box-shadow:none;overflow:visible}
+.featured .product-card:hover{transform:translateY(-4px);border-color:transparent}
+.featured .product-photo{aspect-ratio:1/1.18;border-radius:24px;box-shadow:0 18px 45px #01020f55}
+.featured .product-photo img{filter:brightness(1.12) saturate(1.17) contrast(1.03)}
+.featured .product-meta{display:none}
+.featured .product-card h3{font-size:18px;line-height:1.15;min-height:44px;margin:16px 2px 0;color:#fbfaff}
+.featured .scientific-name{font-family:Besley,Georgia,serif;font-style:italic;color:#b9acd4!important;font-size:12px!important;margin-top:5px}
+.featured .specimen-details{margin:0 2px}
+.featured .specimen-vitals{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.featured .specimen-vitals>div{padding:0 0 11px;border-bottom:1px solid #3d406e;background:transparent}
+.featured .specimen-vitals dt{font-size:7px;letter-spacing:.12em;color:#8f97c7;text-transform:uppercase}
+.featured .specimen-vitals dd{font-size:10px;color:#e5e6fa;margin-top:6px}
+.featured .price-row{padding-top:16px;margin:0 2px;border:0}
+.featured .price-row>span{font-size:18px;color:#fff}
+.featured .price-row button{background:#171a3b;border-color:#55597f;color:#f5f4ff;padding:9px 15px}
+.featured .image-tag{background:#171832d9;color:#fff;border-color:#ffffff35}
+.collector{grid-template-columns:.8fr 1.45fr}
+.coral-guide{margin:24px 2.1%;border-radius:38px;overflow:clip}
+.vitals,.work,#services,.about-split,.faq-section,.location{box-shadow:0 24px 70px #02031530}
+.work-grid{grid-template-columns:repeat(3,1fr)}
+.service-feature{border-radius:28px}
+.pond-seasons{background:linear-gradient(120deg,#092b37,#123d42);display:grid;grid-template-columns:.8fr 1.7fr;gap:60px;color:#f6f7ff}
+.pond-seasons em{color:#b1ef57}
+.pond-seasons .eyebrow{color:#b1ef57}
+.pond-copy>p:not(.eyebrow){max-width:430px;color:#c4d7dd;margin:22px 0 28px;font-size:13px}
+.season-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.season-grid article{min-height:190px;padding:24px;border:1px solid #8ec8be3b;border-radius:23px;background:#ffffff0a}
+.season-grid small{font-size:8px;letter-spacing:.13em;color:#b1ef57;font-weight:800}
+.season-grid h3{font-size:24px;margin:14px 0 9px}
+.season-grid p{font-size:11px;color:#b8ced1;line-height:1.75}
+@media(max-width:1000px){
+ .ref-path-grid{grid-template-columns:1fr 1fr}
+ .categories .category-grid{grid-template-columns:repeat(3,1fr)}
+ .featured .product-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .pond-seasons{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+ body[data-page="home"] main>.section:not(.coral-guide):not(.reviews):not(.quote-section),body[data-page="home"] main>.promise,.coral-guide{margin:12px;border-radius:26px}
+ .ref-path-grid{grid-template-columns:1fr}
+ .ref-path-grid>a{min-height:235px}
+ .categories .category-grid{grid-template-columns:1fr}
+ .categories .category-card{height:330px}
+ .featured .product-grid{grid-template-columns:1fr;gap:44px}
+ .featured .product-photo{aspect-ratio:1/1.08}
+ .featured .product-card h3{font-size:22px;min-height:0}
+ .pond-seasons{gap:38px}
+ .season-grid{grid-template-columns:1fr}
+}
+
 /* React Icons replace typographic UI symbols with accessible SVG artwork. */
 .react-icon{display:inline-flex;align-items:center;justify-content:center;line-height:1;vertical-align:-.12em;flex:0 0 auto}.react-icon svg{display:block;width:1em;height:1em;stroke-width:2}.icon-button .react-icon,.close .react-icon,[data-save] .react-icon,.qty-control .react-icon{font-size:1.2rem}.text-link .react-icon,.button .react-icon,.nav-quote .react-icon,.announcement a .react-icon{margin-left:.28em}.cart-button .leading-bag-icon{margin-right:.38rem}.hero-proof .leading-check-icon,.promise-points .leading-check-icon{color:var(--sea);margin-right:.1rem}.hero-proof span:nth-child(2) .leading-check-icon{color:var(--green)}.react-icons-ready .hero-proof span:before,.react-icons-ready .promise-points span:before,.react-icons-ready .faq-list summary:after{display:none!important;content:none!important}.faq-list summary{position:relative;padding-right:2.5rem}.faq-toggle-icon{position:absolute;right:4px;top:50%;font-size:1.15rem;color:var(--sea);transform:translateY(-50%)}.promise-mark .react-icon{font-size:.88em}.motion-control .react-icon,.reef-scroll-cue .react-icon{margin-left:.3rem}.stock-status .react-icon{font-size:.48em;margin-right:.45rem}.price-row button .react-icon{margin-right:.2rem}
