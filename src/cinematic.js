@@ -19,8 +19,8 @@
   const assetRoot = location.protocol === 'file:' ? 'assets/cinematic' : '/assets/cinematic';
 
   const variants = {
-    desktop: { count: 240, directory: 'desktop', cacheSize: 32, concurrency: 4, lookAhead: 18, lookBehind: 8, damping: 13 },
-    mobile: { count: 240, directory: 'mobile', cacheSize: 36, concurrency: 3, lookAhead: 14, lookBehind: 6, damping: 11 }
+    desktop: { count: 480, directory: 'desktop', cacheSize: 36, concurrency: 6, lookAhead: 28, lookBehind: 12, damping: 13 },
+    mobile: { count: 480, directory: 'mobile', cacheSize: 48, concurrency: 5, lookAhead: 24, lookBehind: 10, damping: 11 }
   };
 
   let variant = mobileQuery.matches ? variants.mobile : variants.desktop;
@@ -97,7 +97,7 @@
         ? index >= lastRenderedFrame && index <= target
         : index <= lastRenderedFrame && index >= target);
       if (directional.length) {
-        const maxStep = mobileQuery.matches ? 4 : 6;
+        const maxStep = mobileQuery.matches ? 6 : 8;
         const bridged = directional.filter(([index]) => Math.abs(index - lastRenderedFrame) <= maxStep);
         if (!bridged.length) return null;
         bridged.sort((a, b) => Math.abs(b[0] - lastRenderedFrame) - Math.abs(a[0] - lastRenderedFrame));
@@ -201,7 +201,7 @@
     trimQueue(target);
     if (lastRenderedFrame >= 0 && Math.abs(target - lastRenderedFrame) > 1) {
       const bridgeDirection = target > lastRenderedFrame ? 1 : -1;
-      const bridgeLength = Math.min(12, Math.abs(target - lastRenderedFrame));
+      const bridgeLength = Math.min(20, Math.abs(target - lastRenderedFrame));
       for (let distance = 1; distance <= bridgeLength; distance += 1) {
         requestFrame(lastRenderedFrame + distance * bridgeDirection);
       }

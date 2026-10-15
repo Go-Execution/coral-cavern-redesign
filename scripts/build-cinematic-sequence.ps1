@@ -18,22 +18,40 @@ New-Item -ItemType Directory -Force -Path $desktopRoot, $mobileRoot | Out-Null
 Get-ChildItem -LiteralPath $desktopRoot, $mobileRoot -Filter 'frame-*.webp' -ErrorAction SilentlyContinue | Remove-Item -Force
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'fps=24,scale=1280:720:flags=lanczos' `
-  -c:v libwebp -q:v 68 -compression_level 5 -preset picture `
+  -vf 'minterpolate=fps=48:mi_mode=blend,scale=1152:648:flags=lanczos' `
+  -c:v libwebp -q:v 58 -compression_level 5 -preset picture `
   (Join-Path $desktopRoot 'frame-%04d.webp')
 
 ffmpeg -y -hide_banner -loglevel error -i $SourceVideo `
-  -vf 'fps=24,crop=405:720:(iw-405)/2:0,scale=405:720:flags=lanczos' `
-  -c:v libwebp -q:v 66 -compression_level 5 -preset picture `
+  -vf 'crop=405:720:(iw-405)/2:0,minterpolate=fps=48:mi_mode=blend,scale=360:640:flags=lanczos' `
+  -c:v libwebp -q:v 56 -compression_level 5 -preset picture `
   (Join-Path $mobileRoot 'frame-%04d.webp')
 
+function Complete-Sequence {
+  param(
+    [string]$Root,
+    [int]$TargetCount
+  )
+
+  $frames = Get-ChildItem -LiteralPath $Root -Filter 'frame-*.webp' | Sort-Object Name
+  if (-not $frames.Count) { throw "No frames were generated in $Root" }
+  $lastFrame = $frames[-1].FullName
+  for ($index = $frames.Count + 1; $index -le $TargetCount; $index += 1) {
+    Copy-Item -LiteralPath $lastFrame -Destination (Join-Path $Root ('frame-{0:D4}.webp' -f $index)) -Force
+  }
+}
+
+Complete-Sequence -Root $desktopRoot -TargetCount 480
+Complete-Sequence -Root $mobileRoot -TargetCount 480
+
 Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start.webp') -Force
-Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0240.webp') -Destination (Join-Path $hostingRoot 'poster-final.webp') -Force
+Copy-Item -LiteralPath (Join-Path $desktopRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final.webp') -Force
 Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0001.webp') -Destination (Join-Path $hostingRoot 'poster-start-mobile.webp') -Force
-Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0240.webp') -Destination (Join-Path $hostingRoot 'poster-final-mobile.webp') -Force
+Copy-Item -LiteralPath (Join-Path $mobileRoot 'frame-0480.webp') -Destination (Join-Path $hostingRoot 'poster-final-mobile.webp') -Force
 
 New-Item -ItemType Directory -Force -Path $offlineRoot | Out-Null
-Copy-Item -Path (Join-Path $hostingRoot '*') -Destination $offlineRoot -Recurse -Force
+& robocopy $hostingRoot $offlineRoot /E /COPY:DAT /DCOPY:DAT /R:10 /W:2 /NFL /NDL /NJH /NJS /NP | Out-Null
+if ($LASTEXITCODE -gt 7) { throw "Unable to mirror cinematic assets (robocopy exit code $LASTEXITCODE)" }
 
 $desktopFrames = Get-ChildItem -LiteralPath $desktopRoot -Filter '*.webp'
 $mobileFrames = Get-ChildItem -LiteralPath $mobileRoot -Filter '*.webp'
