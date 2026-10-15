@@ -90,7 +90,10 @@
 
   function nearestLoaded(target) {
     if (lastRenderedFrame >= 0) {
-      const directional = [...cache.entries()].filter(([index]) => scrollDirection > 0
+      const renderDirection = target === lastRenderedFrame
+        ? scrollDirection
+        : target > lastRenderedFrame ? 1 : -1;
+      const directional = [...cache.entries()].filter(([index]) => renderDirection > 0
         ? index >= lastRenderedFrame && index <= target
         : index <= lastRenderedFrame && index >= target);
       if (directional.length) {
