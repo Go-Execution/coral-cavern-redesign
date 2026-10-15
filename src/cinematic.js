@@ -4,6 +4,7 @@
   const hero = document.querySelector('[data-cinematic-hero]');
   if (!hero) return;
   hero.classList.add('cinematic-active');
+  document.body.classList.add('cinematic-page');
 
   const canvas = hero.querySelector('[data-sequence-canvas]');
   const siteHeader = document.querySelector('header');
@@ -18,15 +19,18 @@
   const assetRoot = location.protocol === 'file:' ? 'assets/cinematic' : '/assets/cinematic';
 
   const variants = {
-    desktop: { count: 200, directory: 'desktop', cacheSize: 34, concurrency: 4 },
-    mobile: { count: 120, directory: 'mobile', cacheSize: 22, concurrency: 3 }
+    desktop: { count: 240, directory: 'desktop', cacheSize: 32, concurrency: 4, lookAhead: 18, lookBehind: 8, damping: 13 },
+    mobile: { count: 240, directory: 'mobile', cacheSize: 36, concurrency: 3, lookAhead: 14, lookBehind: 6, damping: 11 }
   };
 
   let variant = mobileQuery.matches ? variants.mobile : variants.desktop;
   let currentFrame = 0;
   let currentProgress = 0;
+  let targetProgress = 0;
   let lastRenderedFrame = -1;
-  let ticking = false;
+  let animationFrame = 0;
+  let lastTick = 0;
+  let scrollDirection = 1;
   let destroyed = false;
   let cache = new Map();
   let requested = new Set();
@@ -45,8 +49,7 @@
 
   function resizeCanvas() {
     const bounds = canvas.getBoundingClientRect();
-    const maxDpr = mobileQuery.matches ? 1 : 1.5;
-    const dpr = Math.min(devicePixelRatio || 1, maxDpr);
+    const dpr = Math.min(devicePixelRatio || 1, 1);
     const width = Math.max(1, Math.round(bounds.width * dpr));
     const height = Math.max(1, Math.round(bounds.height * dpr));
     if (canvas.width !== width || canvas.height !== height) {
@@ -75,6 +78,8 @@
     }
 
     context.clearRect(0, 0, canvas.width, canvas.height);
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
     context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
     lastRenderedFrame = index;
     canvas.dataset.renderedFrame = String(index);
@@ -84,6 +89,19 @@
   }
 
   function nearestLoaded(target) {
+    if (lastRenderedFrame >= 0) {
+      const directional = [...cache.entries()].filter(([index]) => scrollDirection > 0
+        ? index >= lastRenderedFrame && index <= target
+        : index <= lastRenderedFrame && index >= target);
+      if (directional.length) {
+        const maxStep = mobileQuery.matches ? 4 : 6;
+        const bridged = directional.filter(([index]) => Math.abs(index - lastRenderedFrame) <= maxStep);
+        if (!bridged.length) return null;
+        bridged.sort((a, b) => Math.abs(b[0] - lastRenderedFrame) - Math.abs(a[0] - lastRenderedFrame));
+        return bridged[0];
+      }
+      return null;
+    }
     let nearest = null;
     let distance = Infinity;
     for (const [index, image] of cache) {
@@ -97,8 +115,6 @@
   }
 
   function renderBestFrame(target) {
-    const exact = cache.get(target);
-    if (exact && drawCover(exact, target)) return;
     const nearest = nearestLoaded(target);
     if (nearest && nearest[0] !== lastRenderedFrame) drawCover(nearest[1], nearest[0]);
   }
@@ -106,9 +122,12 @@
   function evictDistantFrames() {
     if (cache.size <= variant.cacheSize) return;
     const protectedFrames = new Set([0, variant.count - 1]);
+    const evictionFocus = lastRenderedFrame >= 0 && Math.abs(currentFrame - lastRenderedFrame) > variant.lookAhead
+      ? lastRenderedFrame
+      : currentFrame;
     const removable = [...cache.keys()]
       .filter(index => !protectedFrames.has(index))
-      .sort((a, b) => Math.abs(b - currentFrame) - Math.abs(a - currentFrame));
+      .sort((a, b) => Math.abs(b - evictionFocus) - Math.abs(a - evictionFocus));
 
     while (cache.size > variant.cacheSize && removable.length) {
       const index = removable.shift();
@@ -121,7 +140,11 @@
 
   function pumpQueue() {
     if (destroyed) return;
-    queue.sort((a, b) => Math.abs(a - currentFrame) - Math.abs(b - currentFrame));
+    const gap = lastRenderedFrame < 0 ? 0 : currentFrame - lastRenderedFrame;
+    const loadFocus = Math.abs(gap) > 4
+      ? lastRenderedFrame + Math.sign(gap) * Math.min(6, Math.abs(gap))
+      : currentFrame;
+    queue.sort((a, b) => Math.abs(a - loadFocus) - Math.abs(b - loadFocus));
     while (activeLoads < variant.concurrency && queue.length) {
       const index = queue.shift();
       if (cache.has(index)) continue;
@@ -138,7 +161,7 @@
         }
         if (!destroyed) {
           cache.set(index, image);
-          if (index === currentFrame || lastRenderedFrame < 0) renderBestFrame(currentFrame);
+          renderBestFrame(currentFrame);
           evictDistantFrames();
         }
         activeLoads -= 1;
@@ -162,11 +185,32 @@
     queue.push(normalized);
   }
 
-  function prioritizeFrames(target) {
+  function trimQueue(target) {
+    const keepDistance = Math.max(32, variant.lookAhead * 2);
+    queue = queue.filter(index => {
+      const keep = Math.abs(index - target) <= keepDistance || index === 0 || index === variant.count - 1;
+      if (!keep) requested.delete(index);
+      return keep;
+    });
+  }
+
+  function prioritizeFrames(target, direction = scrollDirection) {
+    trimQueue(target);
+    if (lastRenderedFrame >= 0 && Math.abs(target - lastRenderedFrame) > 1) {
+      const bridgeDirection = target > lastRenderedFrame ? 1 : -1;
+      const bridgeLength = Math.min(12, Math.abs(target - lastRenderedFrame));
+      for (let distance = 1; distance <= bridgeLength; distance += 1) {
+        requestFrame(lastRenderedFrame + distance * bridgeDirection);
+      }
+    }
     requestFrame(target);
-    for (let distance = 1; distance <= 8; distance += 1) {
-      requestFrame(target + distance);
-      requestFrame(target - distance);
+    const ahead = saveData ? Math.min(8, variant.lookAhead) : variant.lookAhead;
+    const behind = saveData ? Math.min(4, variant.lookBehind) : variant.lookBehind;
+    for (let distance = 1; distance <= ahead; distance += 1) {
+      requestFrame(target + distance * direction);
+    }
+    for (let distance = 1; distance <= behind; distance += 1) {
+      requestFrame(target - distance * direction);
     }
     pumpQueue();
   }
@@ -212,29 +256,54 @@
     return clamp(-bounds.top / distance, 0, 1);
   }
 
-  function updateFromScroll() {
-    ticking = false;
-    currentProgress = calculateProgress();
-    const nextFrame = Math.round(currentProgress * (variant.count - 1));
+  function renderProgress(progress) {
+    const nextFrame = Math.round(progress * (variant.count - 1));
     canvas.dataset.targetFrame = String(nextFrame);
     if (nextFrame !== currentFrame) {
       currentFrame = nextFrame;
-      prioritizeFrames(currentFrame);
+      prioritizeFrames(currentFrame, scrollDirection);
       renderBestFrame(currentFrame);
     }
-    updateChapters(currentProgress);
+    updateChapters(progress);
+  }
+
+  function animateTowardsTarget(timestamp) {
+    animationFrame = 0;
+    const delta = Math.min(50, lastTick ? timestamp - lastTick : 16.67);
+    lastTick = timestamp;
+    const remaining = targetProgress - currentProgress;
+
+    if (Math.abs(remaining) <= .00012) {
+      currentProgress = targetProgress;
+      renderProgress(currentProgress);
+      lastTick = 0;
+      return;
+    }
+
+    scrollDirection = remaining > 0 ? 1 : -1;
+    const blend = 1 - Math.exp(-variant.damping * delta / 1000);
+    currentProgress += remaining * blend;
+    renderProgress(currentProgress);
+    animationFrame = requestAnimationFrame(animateTowardsTarget);
   }
 
   function requestScrollUpdate() {
-    if (ticking) return;
-    ticking = true;
-    requestAnimationFrame(updateFromScroll);
+    const nextProgress = calculateProgress();
+    if (nextProgress !== targetProgress) scrollDirection = nextProgress > targetProgress ? 1 : -1;
+    targetProgress = nextProgress;
+    const destinationFrame = Math.round(targetProgress * (variant.count - 1));
+    canvas.dataset.destinationFrame = String(destinationFrame);
+    requestFrame(destinationFrame);
+    requestFrame(destinationFrame + scrollDirection);
+    pumpQueue();
+    if (!animationFrame) animationFrame = requestAnimationFrame(animateTowardsTarget);
   }
 
   function activateStaticExperience() {
     hero.classList.add('is-static-experience', 'sequence-ready');
     loadingLabel?.setAttribute('hidden', '');
     currentProgress = 1;
+    targetProgress = 1;
     currentFrame = variant.count - 1;
     chapters.forEach((chapter, index) => {
       const isFinal = index === chapters.length - 1;
@@ -277,19 +346,23 @@
 
   syncStageMetrics();
 
-  if (reducedMotion || saveData || !context) {
+  if (reducedMotion || !context) {
     activateStaticExperience();
     return;
   }
 
   resizeCanvas();
   seedSequence();
-  updateFromScroll();
+  targetProgress = calculateProgress();
+  currentProgress = targetProgress;
+  canvas.dataset.destinationFrame = String(Math.round(targetProgress * (variant.count - 1)));
+  renderProgress(currentProgress);
   addEventListener('scroll', requestScrollUpdate, { passive: true });
   addEventListener('resize', handleResize, { passive: true });
 
   addEventListener('pagehide', () => {
     destroyed = true;
+    if (animationFrame) cancelAnimationFrame(animationFrame);
     removeEventListener('scroll', requestScrollUpdate);
     removeEventListener('resize', handleResize);
     cache.forEach(image => image.removeAttribute('src'));

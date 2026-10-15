@@ -10,3 +10,4 @@
 .is-static-experience{height:calc(100dvh - var(--cinematic-header-height,0px));min-height:0}.is-static-experience .cinematic-sticky{top:0}
 @media(max-height:650px) and (min-width:701px){.cinematic-chapter:not(.is-center){padding-top:42px;padding-bottom:68px}.cinematic-chapter .eyebrow{margin-bottom:12px}.cinematic-kicker{margin-bottom:11px}.cinematic-chapter h1,.cinematic-chapter h2{font-size:clamp(42px,5.4vw,66px);line-height:.98}.cinematic-chapter p:not(.eyebrow){margin-top:14px;font-size:14px;line-height:1.4}.cinematic-actions{margin-top:18px}.cinematic-actions .button{min-height:44px;padding-block:10px}.cinematic-scroll-cue{bottom:3%}}
 html,body{overflow-x:clip}
+body.cinematic-page header{background:rgba(7,10,39,.985);-webkit-backdrop-filter:none;backdrop-filter:none}.cinematic-sticky,.cinematic-canvas{backface-visibility:hidden}.cinematic-canvas{transform:translateZ(0)}
