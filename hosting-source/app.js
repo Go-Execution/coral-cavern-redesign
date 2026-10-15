@@ -118,34 +118,39 @@ function buildReefDepthStory(){
  if(document.body.dataset.page!=='home'||$('.reef-depth-story'))return;
  const insertionPoint=$('.featured');
  if(!insertionPoint)return;
- const assetPrefix=location.protocol==='file:'?'assets':'/assets';
- const shopHref=location.protocol==='file:'?'shop.html':'/shop/';
  const section=document.createElement('section');
  section.className='section reef-depth-story';
  section.id='reef-depth';
  section.innerHTML=`
-  <div class="reef-depth-copy">
-   <p class="eyebrow">REEF PLACEMENT / AN IMMERSIVE FIELD GUIDE</p>
-   <h2>Descend through <em>the living reef.</em></h2>
-   <p>Light fades and water flow softens with depth. Scroll through three reef zones to see where different corals feel at home.</p>
-   <div class="reef-zone-list" role="list" aria-label="Coral placement zones">
-    <article class="reef-zone-card is-active" data-zone="0" role="listitem"><span>01 · TOP THIRD</span><h3>SPS ridge</h3><p>Bright light · Strong flow · Advanced care</p></article>
-    <article class="reef-zone-card" data-zone="1" role="listitem"><span>02 · MIDDLE ROCK</span><h3>LPS garden</h3><p>Moderate light · Gentle flow · Room to expand</p></article>
-    <article class="reef-zone-card" data-zone="2" role="listitem"><span>03 · SAND BED</span><h3>Soft & fleshy</h3><p>Lower light · Calm water · A forgiving start</p></article>
-   </div>
-   <a class="text-link" href="${shopHref}?category=corals">Find your coral level <span data-icon="arrow-up-right" aria-hidden="true"></span></a>
+  <div class="reef-map reveal" role="img" aria-label="Illustrated aquarium showing SPS corals at the top, LPS corals in the middle and soft corals on the sand bed">
+   <div class="reef-map-light"><i></i><i></i><i></i></div><span class="reef-map-label is-top">TOP THIRD · SPS</span><span class="reef-map-label is-middle">MIDDLE · LPS</span><span class="reef-map-label is-bottom">BOTTOM · SOFT & SAND-BED LPS</span>
+   <div class="reef-rock rock-one"></div><div class="reef-rock rock-two"></div>
+   <div class="coral-shape coral-sps"><i></i><i></i><i></i><b>Acropora</b></div>
+   <div class="coral-shape coral-lps"><i></i><i></i><i></i><b>Hammer · Torch</b></div>
+   <div class="coral-shape coral-goni"><i></i><i></i><i></i><b>Goniopora</b></div>
+   <div class="coral-shape coral-soft"><i></i><i></i><i></i><b>Ricordea</b></div>
+   <div class="coral-shape coral-fleshy"><i></i><b>Acanthophyllia</b></div>
+   <small>Light fades and flow softens with depth. Match placement to the animal, not only its color.</small>
   </div>
-  <div class="reef-viewport" aria-label="Layered reef placement illustration">
-   <div class="reef-glow" aria-hidden="true"></div>
-   <div class="reef-orbit reef-orbit-one" aria-hidden="true"></div>
-   <div class="reef-orbit reef-orbit-two" aria-hidden="true"></div>
-   <figure class="reef-plane reef-plane-top" data-plane="0"><img src="${assetPrefix}/reef.jpg" alt="Bright upper reef habitat"><figcaption><b>SPS ridge</b><span>High light · strong current</span></figcaption></figure>
-   <figure class="reef-plane reef-plane-middle" data-plane="1"><img src="${assetPrefix}/banana-hammer.webp" alt="Branching Banana Hammer coral"><figcaption><b>LPS garden</b><span>Moderate light · gentle flow</span></figcaption></figure>
-   <figure class="reef-plane reef-plane-bottom" data-plane="2"><img src="${assetPrefix}/ricordea.webp" alt="Raspberry Neon Blast Ricordea coral"><figcaption><b>Sand-bed color</b><span>Lower light · calm water</span></figcaption></figure>
-   <div class="reef-depth-axis" aria-hidden="true"><span>BRIGHT</span><i></i><span>DEEP</span></div>
-   <div class="reef-scroll-cue" aria-hidden="true">SCROLL TO DESCEND <span><span data-icon="arrow-down" aria-hidden="true"></span></span></div>
+  <div class="reef-depth-copy reveal">
+   <p class="eyebrow">FIND YOUR CORAL LEVEL</p>
+   <h2>Every coral has its <em>place</em> in the reef.</h2>
+   <p>Match a coral to the zone it loves and it will color up and grow. Start where your light, your flow and your experience fit.</p>
+   <div class="reef-zone-list" role="list" aria-label="Coral placement zones">
+    <article class="reef-zone-card zone-sps" role="listitem"><span>TOP THIRD</span><h3>SPS <small>Small-polyp stony</small></h3><p>Bright light, strong flow and rock-steady water. Best once your tank has matured.</p><dl><div><dt>Light</dt><dd>High</dd></div><div><dt>Flow</dt><dd>Strong</dd></div><div><dt>Care</dt><dd>Advanced</dd></div></dl><em>Acropora, Montipora</em></article>
+    <article class="reef-zone-card zone-lps" role="listitem"><span>MIDDLE ROCK</span><h3>LPS <small>Large-polyp stony</small></h3><p>Fleshy, flowing corals that like moderate light and gentle, indirect flow.</p><dl><div><dt>Light</dt><dd>Moderate</dd></div><div><dt>Flow</dt><dd>Gentle</dd></div><div><dt>Care</dt><dd>Easy–moderate</dd></div></dl><em>Torch, hammer, Goniopora</em></article>
+    <article class="reef-zone-card zone-soft" role="listitem"><span>BOTTOM & SAND BED</span><h3>Soft corals <small>& sand-bed LPS</small></h3><p>Calm water and softer light. The forgiving place to start, and home to fleshy showpieces.</p><dl><div><dt>Light</dt><dd>Low–moderate</dd></div><div><dt>Flow</dt><dd>Low</dd></div><div><dt>Care</dt><dd>Easy</dd></div></dl><em>Ricordea, Daisy Coral, bubble, Acanthophyllia</em></article>
+   </div>
   </div>`;
  insertionPoint.before(section);
+}
+
+function buildReferenceVitals(){
+ const section=$('.vitals');
+ if(!section||section.dataset.referenceLayout)return;
+ section.dataset.referenceLayout='true';
+ const ranges=[['Specific gravity','1.024–1.026','58%'],['Temperature','75–78°F','50%'],['pH','8.1–8.4','66%'],['Calcium','380–450 ppm','62%'],['Alkalinity','8–9 dKH','45%'],['Magnesium','1,300–1,450 ppm','60%'],['Nitrate (NO₃)','10–30 ppm','41%'],['Phosphate','0.01–0.1 ppm','27%'],['Nitrite (NO₂)','Undetectable','2%'],['Ammonia (NH₃)','Undetectable','2%']];
+ section.innerHTML=`<div class="vitals-reference-copy reveal"><p class="eyebrow">REEF VITALS</p><h2>The numbers that keep a reef <em>alive.</em></h2><div class="reef-day-card"><div class="reef-day-head"><span>A DAY IN A HEALTHY REEF</span><b><i></i> ILLUSTRATION</b></div><div class="reef-day-stats"><div><small>TIME</small><strong>15:45</strong></div><div><small>PH</small><strong>8.25</strong></div><div><small>TEMP</small><strong>77.2°F</strong></div><div><small>STATUS</small><strong>In range</strong></div></div><svg class="reef-day-chart" viewBox="0 0 520 180" role="img" aria-label="Illustration of stable pH and temperature during a reef day"><defs><linearGradient id="reefChartFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#54ecd2" stop-opacity=".38"/><stop offset="1" stop-color="#54ecd2" stop-opacity="0"/></linearGradient></defs><g class="chart-grid"><path d="M0 30H520M0 75H520M0 120H520M130 0V150M260 0V150M390 0V150"/></g><path class="chart-fill" d="M0 48 C90 65 100 132 210 124 S330 52 420 52 S485 69 520 64 V150 H0Z"/><path class="chart-ph" d="M0 48 C90 65 100 132 210 124 S330 52 420 52 S485 69 520 64"/><path class="chart-temp" d="M0 61 C120 92 205 84 292 68 S430 43 520 59"/><g class="chart-labels"><text x="0" y="170">00:00</text><text x="122" y="170">06:00</text><text x="250" y="170">12:00</text><text x="380" y="170">18:00</text><text x="488" y="170">24:00</text></g></svg><p>pH climbs while the lights are on and corals photosynthesize, then drifts down overnight. Temperature barely moves. Both stay inside their bands.</p></div></div><div class="vitals-ranges reveal"><p>Stable water beats perfect water. These are the ranges we recommend for a thriving reef aquarium, and the ones we’ll check when we test your water.</p><h3>Recommended ranges</h3><div class="range-table" role="table" aria-label="Recommended reef water ranges"><div class="range-row range-head" role="row"><span>PARAMETER</span><span>RANGE</span><span aria-hidden="true"></span></div>${ranges.map(([name,value,position])=>`<div class="range-row" role="row"><strong>${name}</strong><code>${value}</code><i><b style="left:${position}"></b></i></div>`).join('')}</div><div class="vitals-callout"><span data-icon="droplet" aria-hidden="true"></span><div><strong>Not sure where your tank sits?</strong><p>Bring a water sample to your visit. We’ll test it and message you the results.</p><a href="tel:+19713744572">Call to book a visit <span data-icon="arrow-right" aria-hidden="true"></span></a></div></div></div>`;
 }
 
 let gsapContext=null;
@@ -202,25 +207,7 @@ function initGsapExperience(){
   if($('.collector-art'))gsap.fromTo('.collector-art',{rotationY:-9,rotationX:4,y:60},{rotationY:6,rotationX:-2,y:-30,ease:'none',scrollTrigger:{trigger:'.collector',start:'top bottom',end:'bottom top',scrub:1}});
   if($('.vitals-console'))gsap.from('.vitals-console',{scale:.96,rotationY:-5,duration:.7,ease:'power3.out',immediateRender:false,scrollTrigger:{trigger:'.vitals-console',start:'top 92%',once:true}});
 
-  ScrollTrigger.matchMedia({
-   '(min-width: 901px)':()=>{
-    if(!$('.reef-depth-story'))return;
-    gsap.set('.reef-plane-top',{z:80,y:-105,rotationX:55,scale:.82});
-    gsap.set('.reef-plane-middle',{z:0,y:5,rotationX:55,scale:.82});
-    gsap.set('.reef-plane-bottom',{z:-80,y:115,rotationX:55,scale:.82});
-    const reefTimeline=gsap.timeline({scrollTrigger:{trigger:'.reef-depth-story',start:'top 76px',end:'+=2100',pin:true,scrub:1,anticipatePin:1,onUpdate:self=>setActiveReefZone(Math.min(2,Math.floor(self.progress*3)))}});
-    reefTimeline
-     .to('.reef-plane-top',{z:230,y:-55,rotationX:8,scale:1.02,duration:1})
-     .to('.reef-plane-top',{z:40,y:-205,opacity:.22,rotationX:68,scale:.72,duration:1})
-     .to('.reef-plane-middle',{z:230,y:0,rotationX:8,scale:1.02,duration:1},'<')
-     .to('.reef-plane-middle',{z:35,y:-190,opacity:.22,rotationX:68,scale:.72,duration:1})
-     .to('.reef-plane-bottom',{z:230,y:45,rotationX:8,scale:1.02,duration:1},'<')
-     .to('.reef-glow',{scale:1.35,opacity:.9,duration:2},0);
-   },
-   '(max-width: 900px)':()=>{
-    gsap.utils.toArray('.reef-plane').forEach((plane,index)=>gsap.from(plane,{x:index%2?28:-28,rotationY:index%2?-6:6,duration:.62,immediateRender:false,scrollTrigger:{trigger:plane,start:'top 92%',once:true}}));
-   }
-  });
+  gsap.utils.toArray('.reef-zone-card,.range-row').forEach((item,index)=>gsap.from(item,{opacity:0,x:24,duration:.45,delay:index*.025,immediateRender:false,scrollTrigger:{trigger:item,start:'top 94%',once:true}}));
 
   $$('.category-card,.service-feature,.guide-card,.collector-art,.vitals-console').forEach(enableTilt);
   const scrollMeter=document.createElement('div');
@@ -300,6 +287,7 @@ function alignHomepageWithReference(){
 
 alignHomepageWithReference();
 buildReefDepthStory();
+buildReferenceVitals();
 enhanceProductCards();
 $$('.product-grid').forEach(grid=>new MutationObserver(()=>enhanceProductCards(grid)).observe(grid,{childList:true}));
 document.addEventListener('click',event=>{
